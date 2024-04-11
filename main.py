@@ -1,4 +1,5 @@
 import pygame
+import particle
 
 pygame.init()
 
@@ -13,15 +14,23 @@ GREEN = (0, 255, 0)
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
-def draw():
-    width, height = pygame.display.get_window_size()
+particle_list = []
 
-    pygame.draw.circle(WIN, GREEN, (width/2, height/2), PARTICLE_SIZE)
-    pygame.display.flip()
+def draw():
+    for particle in particle_list:
+        particle.draw(WIN, PARTICLE_SIZE)
+
+
+def setup():
+    for i in range(NUM_OF_PARTICLES):
+        particle_list.append(particle.Particle(0, PARTICLE_SIZE, GREEN, 0))
+
 
 def main():
     run = True
     clock = pygame.time.Clock()
+
+    setup()
 
     while run:
         clock.tick(FPS)
