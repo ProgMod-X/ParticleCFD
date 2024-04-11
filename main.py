@@ -2,17 +2,15 @@ import pygame
 
 pygame.init()
 
-WIDTH, HEIGHT = 1920, 1080
+WIDTH, HEIGHT = 800, 400
 FPS = 60
 
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN, pygame.NOFRAME)
+WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("PCFD")
 
 def draw():
     pass
-
-
 
 
 def main():
