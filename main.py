@@ -1,11 +1,9 @@
 import pygame
-import random
 
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 60
-POINTS = 10
 
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN, pygame.NOFRAME)
