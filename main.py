@@ -14,7 +14,9 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
 def draw():
-    pygame.draw.circle(WIN, GREEN, (WIDTH/2, HEIGHT/2), PARTICLE_SIZE)
+    width, height = pygame.display.get_window_size()
+
+    pygame.draw.circle(WIN, GREEN, (width/2, height/2), PARTICLE_SIZE)
     pygame.display.flip()
 
 def main():
