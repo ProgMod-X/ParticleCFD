@@ -8,6 +8,7 @@ WIDTH, HEIGHT = 400, 400
 FPS = 60
 NUM_OF_PARTICLES = 21
 PARTICLE_SIZE = 10
+GRAVITY = 9.81
 
 # Colors
 GREEN = (0, 255, 0)
@@ -18,11 +19,12 @@ pygame.display.set_caption("PCFD")
 particle_list = []
 
 def draw():
+    WIN.fill((0, 0, 0))
     for particle in particle_list:
         particle.draw(WIN, PARTICLE_SIZE)
 
-    pygame.display.flip()
     
+    pygame.display.flip()
 
 
 def setup():
@@ -47,8 +49,7 @@ def setup():
         for j in range(grid_cols):
             x = start_x + i * (PARTICLE_SIZE + grid_gap)
             y = start_y + j * (PARTICLE_SIZE + grid_gap)
-            particle_list.append(particle.Particle(x, y, GREEN, 0))
-
+            particle_list.append(particle.Particle(x, y, GREEN, np.array([0, GRAVITY])))
 
 
 def main():
