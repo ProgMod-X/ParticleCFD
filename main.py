@@ -2,18 +2,20 @@ import pygame
 
 pygame.init()
 
-WIDTH, HEIGHT = 1920, 1080
+WIDTH, HEIGHT = 400, 400
 FPS = 60
+NUM_OF_PARTICLES = 10
+PARTICLE_SIZE = 5
 
+# Colors
+GREEN = (0, 255, 0)
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN, pygame.NOFRAME)
+WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
 def draw():
-    pass
-
-
-
+    pygame.draw.circle(WIN, GREEN, (WIDTH/2, HEIGHT/2), PARTICLE_SIZE)
+    pygame.display.flip()
 
 def main():
     run = True
