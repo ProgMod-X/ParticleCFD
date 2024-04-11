@@ -1,12 +1,13 @@
 import pygame
+import numpy as np
 import particle
 
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 60
-NUM_OF_PARTICLES = 10
-PARTICLE_SIZE = 5
+NUM_OF_PARTICLES = 21
+PARTICLE_SIZE = 10
 
 # Colors
 GREEN = (0, 255, 0)
@@ -20,13 +21,40 @@ def draw():
     for particle in particle_list:
         particle.draw(WIN, PARTICLE_SIZE)
 
+    pygame.display.flip()
+    
+
 
 def setup():
-    for i in range(NUM_OF_PARTICLES):
-        particle_list.append(particle.Particle(0, PARTICLE_SIZE, GREEN, 0))
+
+    width, height = pygame.display.get_window_size()
+
+    grid_rows = int(np.sqrt(NUM_OF_PARTICLES))
+    grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
+    grid_gap = PARTICLE_SIZE * 1.5
+
+    # Adjust grid parameters if there are extra particles
+    while grid_rows * grid_cols > NUM_OF_PARTICLES:
+        grid_rows -= 1
+        grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
+
+    # Calculate starting positions for the grid
+    start_x = width // 2 - (grid_rows // 2) * (PARTICLE_SIZE + grid_gap)
+    start_y = height // 2 - (grid_cols // 2) * (PARTICLE_SIZE + grid_gap)
+
+    # Place particles in the grid
+    for i in range(grid_rows):
+        for j in range(grid_cols):
+            x = start_x + i * (PARTICLE_SIZE + grid_gap)
+            y = start_y + j * (PARTICLE_SIZE + grid_gap)
+            particle_list.append(particle.Particle(x, y, GREEN, 0))
+
 
 
 def main():
+    global WIN
+    global particle_list
+
     run = True
     clock = pygame.time.Clock()
 
@@ -38,10 +66,13 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
                     pygame.quit()
+            elif event.type == pygame.VIDEORESIZE:
+                particle_list = []
+                setup()
         draw()
 
 if __name__ == "__main__":
