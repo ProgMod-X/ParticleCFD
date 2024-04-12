@@ -9,6 +9,7 @@ WIDTH, HEIGHT = 400, 400
 FPS = 60
 NUM_OF_PARTICLES = 21
 DAMPENING_EFFECT = .97
+NEAR_DISTANCE_REQUIRED = 20
 PARTICLE_PIXEL_RADIUS = 10
 PARTICLE_METER_RADIUS = 10 # Meter
 GRAVITY = 9.81
@@ -37,17 +38,28 @@ def deltaTime() -> float:
     
     return delta_time
 
-def force(gravity: pygame.Vector2, particles: list[particle.Particle]) -> pygame.Vector2:
+def force(gravity: pygame.Vector2, particle: particle.Particle) -> pygame.Vector2:
     force = gravity
-    #force += repulsion(particles)
+    force += repulsion(particle)
     
     return force
 
+def repulsion(particle: particle.Particle) -> pygame.Vector2:
+    repulsion_force = pygame.Vector2()
+    for sel_particle in particle_list:
+        angle = particle.position.angle_to(sel_particle.position)
+        distance = particle.position.distance_to(sel_particle.position)
+        force = 0 if distance == 0 else 1 / distance
+
+
+        repulsion_force.x += np.cos(angle) * force
+        repulsion_force.y += np.sin(angle) * force
+    return repulsion_force
 
 def draw(dt):
     WIN.fill((0, 0, 0))
     for particle in particle_list:
-        particle.velocity += force(IRL_GRAVITY, particle_list)*dt
+        particle.velocity += force(IRL_GRAVITY, particle)*dt
         particle.draw(WIN)
 
     
