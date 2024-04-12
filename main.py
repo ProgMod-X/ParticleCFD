@@ -7,8 +7,12 @@ pygame.init()
 WIDTH, HEIGHT = 400, 400
 FPS = 60
 NUM_OF_PARTICLES = 21
-PARTICLE_SIZE = 10
+PARTICLE_PIXEL_RADIUS = 10
+PARTICLE_METER_RADIUS = 0.1 # Meter
 GRAVITY = 9.81
+IRL_GRAVITY = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
+
+
 
 # Colors
 GREEN = (0, 255, 0)
@@ -21,7 +25,8 @@ particle_list = []
 def draw():
     WIN.fill((0, 0, 0))
     for particle in particle_list:
-        particle.draw(WIN, PARTICLE_SIZE)
+        particle.velocity += np.array([0, IRL_GRAVITY])
+        particle.draw(WIN, PARTICLE_PIXEL_RADIUS)
 
     
     pygame.display.flip()
@@ -33,7 +38,7 @@ def setup():
 
     grid_rows = int(np.sqrt(NUM_OF_PARTICLES))
     grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
-    grid_gap = PARTICLE_SIZE * 1.5
+    grid_gap = PARTICLE_PIXEL_RADIUS * 1.5
 
     # Adjust grid parameters if there are extra particles
     while grid_rows * grid_cols > NUM_OF_PARTICLES:
@@ -41,15 +46,15 @@ def setup():
         grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
 
     # Calculate starting positions for the grid
-    start_x = width // 2 - (grid_rows // 2) * (PARTICLE_SIZE + grid_gap)
-    start_y = height // 2 - (grid_cols // 2) * (PARTICLE_SIZE + grid_gap)
+    start_x = width // 2 - (grid_rows // 2) * (PARTICLE_PIXEL_RADIUS + grid_gap)
+    start_y = height // 2 - (grid_cols // 2) * (PARTICLE_PIXEL_RADIUS + grid_gap)
 
     # Place particles in the grid
     for i in range(grid_rows):
         for j in range(grid_cols):
-            x = start_x + i * (PARTICLE_SIZE + grid_gap)
-            y = start_y + j * (PARTICLE_SIZE + grid_gap)
-            particle_list.append(particle.Particle(x, y, GREEN, np.array([0, GRAVITY])))
+            x = start_x + i * (PARTICLE_PIXEL_RADIUS + grid_gap)
+            y = start_y + j * (PARTICLE_PIXEL_RADIUS + grid_gap)
+            particle_list.append(particle.Particle(x, y, GREEN, np.array([0.0, 0.0])))
 
 
 def main():
