@@ -6,11 +6,11 @@ import time
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 5
-NUM_OF_PARTICLES = 2
+FPS = 60
+NUM_OF_PARTICLES = 5
 DAMPENING_EFFECT = .97
 NEAR_DISTANCE_REQUIRED = 20
-PARTICLE_PIXEL_RADIUS = 10
+PARTICLE_PIXEL_RADIUS = 7
 PARTICLE_METER_RADIUS = 10 # Meter
 GRAVITY = 9.81
 IRL_GRAVITY = pygame.Vector2()
@@ -49,15 +49,23 @@ def repulsion(particle: particle.Particle) -> pygame.Vector2:
     for sel_particle in particle_list:
         if sel_particle == particle:
             continue
-        angle = particle.position.angle_to(sel_particle.position)
-        distance = particle.position.distance_to(sel_particle.position)
         
-        force = 0 if distance == 0 else 1 / distance
-
-
-        repulsion_force.x += np.cos(angle) * force
-        repulsion_force.y += np.sin(angle) * force
+        diff = sel_particle.position - particle.position
+        distance = diff.length()
+        
+        if distance == 0:
+            continue
+        
+        # Calculate normalized direction vector with length 1
+        direction = diff.normalize()
+        
+        # Calculate the force magnitude based on distance
+        force_magnitude = 1 / (distance**2) # Inverse square law
+        
+        repulsion_force -= direction * force_magnitude
+        
     return repulsion_force
+
 
 def draw(dt):
     WIN.fill((0, 0, 0))
