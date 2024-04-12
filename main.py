@@ -6,8 +6,8 @@ import time
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 60
-NUM_OF_PARTICLES = 21
+FPS = 5
+NUM_OF_PARTICLES = 2
 DAMPENING_EFFECT = .97
 NEAR_DISTANCE_REQUIRED = 20
 PARTICLE_PIXEL_RADIUS = 10
@@ -47,8 +47,11 @@ def force(gravity: pygame.Vector2, particle: particle.Particle) -> pygame.Vector
 def repulsion(particle: particle.Particle) -> pygame.Vector2:
     repulsion_force = pygame.Vector2()
     for sel_particle in particle_list:
+        if sel_particle == particle:
+            continue
         angle = particle.position.angle_to(sel_particle.position)
         distance = particle.position.distance_to(sel_particle.position)
+        
         force = 0 if distance == 0 else 1 / distance
 
 
