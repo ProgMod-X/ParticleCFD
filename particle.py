@@ -6,8 +6,8 @@ class Particle:
     def __init__(
         self,
         posistion: pygame.Vector2,
-        color: tuple,
         velocity: pygame.Vector2,
+        color: tuple,
         size: int,
         dampening_effect: float,
     ):
