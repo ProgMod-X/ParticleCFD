@@ -8,6 +8,7 @@ pygame.init()
 WIDTH, HEIGHT = 400, 400
 FPS = 60
 NUM_OF_PARTICLES = 21
+DAMPENING_EFFECT = 1
 PARTICLE_PIXEL_RADIUS = 10
 PARTICLE_METER_RADIUS = 10 # Meter
 GRAVITY = 9.81
@@ -69,7 +70,7 @@ def setup():
         for j in range(grid_cols):
             x = start_x + i * (PARTICLE_PIXEL_RADIUS + grid_gap)
             y = start_y + j * (PARTICLE_PIXEL_RADIUS + grid_gap)
-            particle_list.append(particle.Particle(x, y, GREEN, pygame.Vector2(0), PARTICLE_PIXEL_RADIUS))
+            particle_list.append(particle.Particle(x, y, GREEN, pygame.Vector2(0), PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT))
 
 
 def main():
