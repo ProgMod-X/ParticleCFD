@@ -18,8 +18,6 @@ class Particle:
         self.dampening_effect = -dampening_effect
 
     def draw(self, window, dt):
-        self.position += self.velocity*dt
-
         win_width, win_height = window.get_size()
 
         # Check if particle touches left or right boundary

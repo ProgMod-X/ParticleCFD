@@ -6,8 +6,8 @@ import time
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 120
-NUM_OF_PARTICLES = 50
+FPS = 60
+NUM_OF_PARTICLES = 2
 DAMPENING_EFFECT = .97
 NEAR_DISTANCE_REQUIRED = 20
 PARTICLE_PIXEL_RADIUS = 7
@@ -54,23 +54,26 @@ def repulsion(particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
         
         if distance == 0:
+            print("overlap")
             continue
         
         # Calculate normalized direction vector with length 1
         direction = diff.normalize()
         
         # Calculate the force magnitude based on distance
-        force_magnitude = 100 / (distance**2) # Inverse square law
+        force_magnitude = 10000 / (distance**2) # Inverse square law
         
         repulsion_force -= direction * force_magnitude
         
     return repulsion_force  
 
 
-def draw(dt):
+def simulate(dt):
     WIN.fill((0, 0, 0))
     for particle in particle_list:
         particle.velocity += force(IRL_GRAVITY, particle)*dt
+        particle.position += particle.velocity*dt
+        
         particle.draw(WIN, dt)
 
     
@@ -126,7 +129,7 @@ def main():
                 particle_list = []
                 setup()
         dt = deltaTime()
-        draw(dt)
+        simulate(dt)
 
 if __name__ == "__main__":
     main()
