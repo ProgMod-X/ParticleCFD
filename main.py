@@ -9,7 +9,8 @@ FPS = 60
 NUM_OF_PARTICLES = 21
 PARTICLE_PIXEL_RADIUS = 10
 PARTICLE_METER_RADIUS = 0.1 # Meter
-GRAVITY = 9.81
+GRAVITY = pygame.Vector2()
+GRAVITY.y = 9.81
 IRL_GRAVITY = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
 
 # Colors
@@ -23,7 +24,7 @@ particle_list = []
 def draw():
     WIN.fill((0, 0, 0))
     for particle in particle_list:
-        particle.velocity += np.array([0, GRAVITY])
+        particle.velocity += GRAVITY
         particle.draw(WIN)
 
     
@@ -52,7 +53,7 @@ def setup():
         for j in range(grid_cols):
             x = start_x + i * (PARTICLE_PIXEL_RADIUS + grid_gap)
             y = start_y + j * (PARTICLE_PIXEL_RADIUS + grid_gap)
-            particle_list.append(particle.Particle(x, y, GREEN, np.array([0.0, 0.0]), PARTICLE_PIXEL_RADIUS))
+            particle_list.append(particle.Particle(x, y, GREEN, pygame.Vector2(0), PARTICLE_PIXEL_RADIUS))
 
 
 def main():

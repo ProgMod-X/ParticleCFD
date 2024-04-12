@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 
 class Particle:
-    def __init__(self, x, y, color, velocity, size):
+    def __init__(self, x, y, color, velocity: pygame.Vector2, size):
         self.x = x
         self.y = y
         self.color = color
