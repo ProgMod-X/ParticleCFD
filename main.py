@@ -21,6 +21,8 @@ GREEN = (0, 255, 0)
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
+particle_list = []
+
 def deltaTime():
     # Get the current time in seconds
     current_time = time.time()
@@ -35,14 +37,12 @@ def deltaTime():
     
     return delta_time
 
-def force(GRAVITY, particles):
-    force = GRAVITY
+def force(gravity, particles):
+    force = gravity
     #force += repulsion(particles)
     
     return force
 
-
-particle_list = []
 
 def draw(dt):
     WIN.fill((0, 0, 0))
