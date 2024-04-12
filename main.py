@@ -80,7 +80,7 @@ def simulate(dt, particle_list):
         new_velocity = particle.velocity + force(IRL_GRAVITY, particle) * dt
         
         # Create a new Particle instance with the updated properties
-        current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT)
+        current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT) # Hjelp, vet ikke hvorfor det ikke fungerer
         
         # Add the updated particle to the new particle_list
         particle_list.append(current_particle)
