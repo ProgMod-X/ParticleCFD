@@ -34,13 +34,19 @@ def deltaTime():
     
     return delta_time
 
+def force(GRAVITY, particles):
+    force = GRAVITY
+    #force += repulsion(particles)
+    
+    return force
+
 
 particle_list = []
 
 def draw(dt):
     WIN.fill((0, 0, 0))
     for particle in particle_list:
-        particle.velocity += IRL_GRAVITY*dt
+        particle.velocity += force(IRL_GRAVITY, particle_list)*dt
         particle.draw(WIN)
 
     
