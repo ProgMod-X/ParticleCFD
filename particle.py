@@ -2,12 +2,13 @@ import pygame
 import numpy as np
 
 class Particle:
-    def __init__(self, x, y, color, velocity: pygame.Vector2, size):
+    def __init__(self, x, y, color, velocity: pygame.Vector2, size, dampening_effect):
         self.x = x
         self.y = y
         self.color = color
         self.velocity = velocity
         self.size = size
+        self.dampening_effect = -dampening_effect
     
     def draw(self, window):
         self.x += self.velocity[0]
@@ -17,11 +18,11 @@ class Particle:
 
        # Check if particle touches left or right boundary
         if self.x - self.size <= 0 or self.x + self.size >= win_width:
-            self.velocity[0] *= -1
+            self.velocity[0] *= self.dampening_effect
         
         # Check if particle touches top or bottom boundary
         if self.y - self.size <= 0 or self.y + self.size >= win_height:
-            self.velocity[1] *= -1
+            self.velocity[1] *= self.dampening_effect
 
         # Make sure the particles are inside the bounding box, which is set to the window size.
         self.x = max(self.size, min(self.x, win_width - self.size))
