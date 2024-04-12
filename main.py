@@ -12,8 +12,6 @@ PARTICLE_METER_RADIUS = 0.1 # Meter
 GRAVITY = 9.81
 IRL_GRAVITY = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
 
-
-
 # Colors
 GREEN = (0, 255, 0)
 
@@ -25,8 +23,8 @@ particle_list = []
 def draw():
     WIN.fill((0, 0, 0))
     for particle in particle_list:
-        particle.velocity += np.array([0, IRL_GRAVITY])
-        particle.draw(WIN, PARTICLE_PIXEL_RADIUS)
+        particle.velocity += np.array([0, GRAVITY])
+        particle.draw(WIN)
 
     
     pygame.display.flip()
@@ -54,7 +52,7 @@ def setup():
         for j in range(grid_cols):
             x = start_x + i * (PARTICLE_PIXEL_RADIUS + grid_gap)
             y = start_y + j * (PARTICLE_PIXEL_RADIUS + grid_gap)
-            particle_list.append(particle.Particle(x, y, GREEN, np.array([0.0, 0.0])))
+            particle_list.append(particle.Particle(x, y, GREEN, np.array([0.0, 0.0]), PARTICLE_PIXEL_RADIUS))
 
 
 def main():
