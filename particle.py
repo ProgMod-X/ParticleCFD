@@ -17,8 +17,8 @@ class Particle:
         self.size = size
         self.dampening_effect = -dampening_effect
 
-    def draw(self, window):
-        self.position += self.velocity
+    def draw(self, window, dt):
+        self.position += self.velocity*dt
 
         win_width, win_height = window.get_size()
 
