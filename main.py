@@ -23,7 +23,7 @@ pygame.display.set_caption("PCFD")
 
 particle_list = []
 
-def deltaTime():
+def deltaTime() -> float:
     # Get the current time in seconds
     current_time = time.time()
     
@@ -37,7 +37,7 @@ def deltaTime():
     
     return delta_time
 
-def force(gravity, particles):
+def force(gravity: pygame.Vector2, particles: list[particle.Particle]) -> pygame.Vector2:
     force = gravity
     #force += repulsion(particles)
     
