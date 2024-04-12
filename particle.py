@@ -15,15 +15,13 @@ class Particle:
 
         win_width, win_height = window.get_size()
 
-        # The below is the first iteration of the bounding box
-        # if self.x < 0:
-        #     self.x = 0 + self.size
-        # elif self.x > win_width:
-        #     self.x = win_width - self.size
-        # if self.y < 0:
-        #     self.y = 0 + self.size
-        # elif self.y > win_height:
-        #     self.y = win_height - self.size
+       # Check if particle touches left or right boundary
+        if self.x - self.size <= 0 or self.x + self.size >= win_width:
+            self.velocity[0] *= -1
+        
+        # Check if particle touches top or bottom boundary
+        if self.y - self.size <= 0 or self.y + self.size >= win_height:
+            self.velocity[1] *= -1
 
         # Make sure the particles are inside the bounding box, which is set to the window size.
         self.x = max(self.size, min(self.x, win_width - self.size))
