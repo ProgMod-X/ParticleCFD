@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 import particle
+import time
 
 pygame.init()
 
@@ -19,12 +20,27 @@ GREEN = (0, 255, 0)
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
+def deltaTime():
+    # Get the current time in seconds
+    current_time = time.time()
+    
+    # Calculate the difference between the current time and the last time deltaTime was called
+    if 'last_time' not in deltaTime.__dict__:
+        deltaTime.last_time = current_time
+    delta_time = current_time - deltaTime.last_time
+    
+    # Update the last_time for the next deltaTime call
+    deltaTime.last_time = current_time
+    
+    return delta_time
+
+
 particle_list = []
 
-def draw():
+def draw(dt):
     WIN.fill((0, 0, 0))
     for particle in particle_list:
-        particle.velocity += GRAVITY
+        particle.velocity += GRAVITY*dt
         particle.draw(WIN)
 
     
@@ -78,7 +94,8 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particle_list = []
                 setup()
-        draw()
+        dt = deltaTime()
+        draw(dt)
 
 if __name__ == "__main__":
     main()
