@@ -9,10 +9,10 @@ WIDTH, HEIGHT = 400, 400
 FPS = 60
 NUM_OF_PARTICLES = 21
 PARTICLE_PIXEL_RADIUS = 10
-PARTICLE_METER_RADIUS = 0.1 # Meter
-GRAVITY = pygame.Vector2()
-GRAVITY.y = 9.81
-IRL_GRAVITY = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
+PARTICLE_METER_RADIUS = 10 # Meter
+GRAVITY = 9.81
+IRL_GRAVITY = pygame.Vector2()
+IRL_GRAVITY.y = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
 
 # Colors
 GREEN = (0, 255, 0)
@@ -40,7 +40,7 @@ particle_list = []
 def draw(dt):
     WIN.fill((0, 0, 0))
     for particle in particle_list:
-        particle.velocity += GRAVITY*dt
+        particle.velocity += IRL_GRAVITY*dt
         particle.draw(WIN)
 
     
