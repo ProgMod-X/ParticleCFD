@@ -46,13 +46,13 @@ def force(gravity: pygame.Vector2, particle: particle.Particle) -> pygame.Vector
     
     return force
 
-def repulsion(particle: particle.Particle) -> pygame.Vector2:
+def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
     repulsion_force = pygame.Vector2()
     for sel_particle in last_particle_list:
-        if sel_particle == particle:
+        if sel_particle == cur_particle:
             continue
         
-        diff = sel_particle.position - particle.position
+        diff = sel_particle.position - cur_particle.position
         distance = diff.length()
         
         if distance == 0:
@@ -74,10 +74,10 @@ def simulate(dt, particle_list):
     last_particle_list = [p for p in particle_list]
     particle_list = []
     WIN.fill((0, 0, 0))
-    for particle in last_particle_list:
+    for cur_particle in last_particle_list:
         # Calculate the new position and velocity based on the forces
-        new_position = particle.position + particle.velocity * dt
-        new_velocity = particle.velocity + force(IRL_GRAVITY, particle) * dt
+        new_position = cur_particle.position + cur_particle.velocity * dt
+        new_velocity = cur_particle.velocity + force(IRL_GRAVITY, cur_particle) * dt
         
         # Create a new Particle instance with the updated properties
         current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT) # Hjelp, vet ikke hvorfor det ikke fungerer
