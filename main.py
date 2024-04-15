@@ -85,13 +85,13 @@ def simulate(dt):
         new_position = cur_particle.position + (cur_particle.velocity) * dt
         
         # Create a new Particle instance with the updated properties
-        current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT)
+        new_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT)
         
         # Add the updated particle to the new particle_list
-        particle_list.append(current_particle)
+        particle_list.append(new_particle)
         
         # Draw the updated particle
-        current_particle.draw(WIN)
+        new_particle.draw(WIN)
     
     pygame.display.flip()
 
