@@ -96,6 +96,8 @@ def simulate(dt):
 
 
 def setup():
+    global last_particle_list
+
     width, height = pygame.display.get_window_size()
 
     grid_rows = int(np.sqrt(NUM_OF_PARTICLES))
