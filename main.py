@@ -8,14 +8,15 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 120
-NUM_OF_PARTICLES = 20
+NUM_OF_PARTICLES = 3
 DAMPENING_EFFECT = .75
-NEAR_DISTANCE_REQUIRED = 50 # Pixels
-PARTICLE_PIXEL_RADIUS = 7
+NEAR_DISTANCE_REQUIRED = 30 # Pixels
+PARTICLE_PIXEL_RADIUS = 10
 PARTICLE_METER_RADIUS = 0.1 # Meter
 GRAVITY = 9.81
 IRL_GRAVITY = pygame.Vector2()
 IRL_GRAVITY.y = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
+MAX_FORCE_MAGNITUDE = 1E5
 
 # Colors
 GREEN = (0, 255, 0)
@@ -40,6 +41,29 @@ def deltaTime() -> float:
     
     return delta_time
 
+def simulate(dt):
+    global particle_list
+    global last_particle_list
+
+    last_particle_list = [p for p in particle_list]
+    particle_list = []
+    WIN.fill((0, 0, 0))
+    for cur_particle in last_particle_list:
+        # Calculate the new position and velocity based on the forces
+        new_velocity = cur_particle.velocity + (force(IRL_GRAVITY, cur_particle)) * dt
+        new_position = cur_particle.position + (cur_particle.velocity) * dt
+        
+        # Create a new Particle instance with the updated properties
+        new_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT)
+        
+        # Add the updated particle to the new particle_list
+        particle_list.append(new_particle)
+        
+        # Draw the updated particle
+        new_particle.draw(WIN)
+    
+    pygame.display.flip()
+
 def force(gravity: pygame.Vector2, particle: particle.Particle) -> pygame.Vector2:
     force = gravity
     force += repulsion(particle)
@@ -57,15 +81,16 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
         diff = sel_particle.position - cur_particle.position
         distance = diff.length() - 2 * PARTICLE_PIXEL_RADIUS
 
-        if distance == 0 or diff == [0, 0]:
-            #print("overlap")
-            continue
-        
-        # Calculate normalized direction vector with length 1
-        direction = diff.normalize()
-    
-        # Calculate the force magnitude based on distance
-        force_magnitude = 1E5 / (distance)**2 # Inverse square law
+        if distance == 0 or diff == pygame.Vector2(0, 0):
+            # Apply a large repulsion force when particles overlap
+            force_magnitude = MAX_FORCE_MAGNITUDE
+            # Set direction to a random unit vector
+            direction = sel_particle.velocity.normalize()
+        else:
+            # Calculate the force magnitude based on distance
+            force_magnitude = min(1E5 / (distance)**2, MAX_FORCE_MAGNITUDE)  # Inverse square law
+            # Calculate normalized direction vector with length 1
+            direction = diff.normalize()
     
         repulsion_force -= direction * force_magnitude
         
