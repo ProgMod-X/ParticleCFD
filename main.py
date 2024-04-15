@@ -7,12 +7,11 @@ import random
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 60
-NUM_OF_PARTICLES = 5
-DAMPENING_EFFECT = .97
-NEAR_DISTANCE_REQUIRED = 20
-PARTICLE_PIXEL_RADIUS = 7
-PARTICLE_METER_RADIUS = 10 # Meter
+FPS = 240
+NUM_OF_PARTICLES = 2
+DAMPENING_EFFECT = .90
+PARTICLE_PIXEL_RADIUS = 10
+PARTICLE_METER_RADIUS = 0.1 # Meter
 GRAVITY = 9.81
 IRL_GRAVITY = pygame.Vector2()
 IRL_GRAVITY.y = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
@@ -63,9 +62,9 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
         direction = diff.normalize()
         
         # Calculate the force magnitude based on distance
-        force_magnitude = 1000 / (distance**2) # Inverse square law
+        force_magnitude = 1E-3 / (distance**2) # Inverse square law
         
-        repulsion_force -= direction * force_magnitude
+        repulsion_force = -direction * force_magnitude
         
     return repulsion_force  
 
@@ -78,8 +77,8 @@ def simulate(dt):
     WIN.fill((0, 0, 0))
     for cur_particle in last_particle_list:
         # Calculate the new position and velocity based on the forces
-        new_position = cur_particle.position + cur_particle.velocity * dt
         new_velocity = cur_particle.velocity + force(IRL_GRAVITY, cur_particle) * dt
+        new_position = cur_particle.position + cur_particle.velocity * dt
         
         # Create a new Particle instance with the updated properties
         current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT) # Hjelp, vet ikke hvorfor det ikke fungerer
@@ -88,7 +87,7 @@ def simulate(dt):
         particle_list.append(current_particle)
         
         # Draw the updated particle
-        current_particle.draw(WIN, dt)
+        current_particle.draw(WIN)
     
     pygame.display.flip()
 
