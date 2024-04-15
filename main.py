@@ -67,7 +67,7 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
         # Calculate the force magnitude based on distance
         force_magnitude = 1E5 / (distance)**2 # Inverse square law
         
-        repulsion_force -= direction * force_magnitude
+        repulsion_force = -direction * force_magnitude
         
     return repulsion_force  
 
@@ -81,8 +81,8 @@ def simulate(dt):
     WIN.fill((0, 0, 0))
     for cur_particle in last_particle_list:
         # Calculate the new position and velocity based on the forces
-        new_position = cur_particle.position + cur_particle.velocity * dt
         new_velocity = cur_particle.velocity + force(IRL_GRAVITY, cur_particle) * dt
+        new_position = cur_particle.position + cur_particle.velocity * dt
         
         # Create a new Particle instance with the updated properties
         current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT) # Hjelp, vet ikke hvorfor det ikke fungerer
@@ -91,7 +91,7 @@ def simulate(dt):
         particle_list.append(current_particle)
         
         # Draw the updated particle
-        current_particle.draw(WIN, dt)
+        current_particle.draw(WIN)
     
     pygame.display.flip()
 
