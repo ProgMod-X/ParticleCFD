@@ -8,9 +8,9 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 120
-NUM_OF_PARTICLES = 50
-DAMPENING_EFFECT = .5
-NEAR_DISTANCE_REQUIRED = 20
+NUM_OF_PARTICLES = 20
+DAMPENING_EFFECT = .75
+NEAR_DISTANCE_REQUIRED = 50 # Pixels
 PARTICLE_PIXEL_RADIUS = 7
 PARTICLE_METER_RADIUS = 0.1 # Meter
 GRAVITY = 9.81
@@ -58,16 +58,16 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length() - 2 * PARTICLE_PIXEL_RADIUS
 
         if distance == 0 or diff == [0, 0]:
-            # print("overlap")
+            #print("overlap")
             continue
         
         # Calculate normalized direction vector with length 1
         direction = diff.normalize()
-        
+    
         # Calculate the force magnitude based on distance
         force_magnitude = 1E5 / (distance)**2 # Inverse square law
-        
-        repulsion_force = -direction * force_magnitude
+    
+        repulsion_force -= direction * force_magnitude
         
     return repulsion_force  
 
@@ -81,11 +81,11 @@ def simulate(dt):
     WIN.fill((0, 0, 0))
     for cur_particle in last_particle_list:
         # Calculate the new position and velocity based on the forces
-        new_velocity = cur_particle.velocity + force(IRL_GRAVITY, cur_particle) * dt
-        new_position = cur_particle.position + cur_particle.velocity * dt
+        new_velocity = cur_particle.velocity + (force(IRL_GRAVITY, cur_particle)) * dt
+        new_position = cur_particle.position + (cur_particle.velocity) * dt
         
         # Create a new Particle instance with the updated properties
-        current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT) # Hjelp, vet ikke hvorfor det ikke fungerer
+        current_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT)
         
         # Add the updated particle to the new particle_list
         particle_list.append(current_particle)
@@ -151,7 +151,7 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particle_list = []
                 setup()
-        dt = 0.001
+        dt = 0.01
         simulate(dt)
 
 if __name__ == "__main__":
