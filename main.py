@@ -8,7 +8,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 120
-NUM_OF_PARTICLES = 20
+NUM_OF_PARTICLES = 200
 DAMPENING_EFFECT = .75
 NEAR_DISTANCE_REQUIRED = 50 # Pixels
 PARTICLE_PIXEL_RADIUS = 7
@@ -43,33 +43,37 @@ def deltaTime() -> float:
 def force(gravity: pygame.Vector2, particle: particle.Particle) -> pygame.Vector2:
     force = gravity
     force += repulsion(particle)
-    
+
     return force
 
 def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
-    global last_particle_list
+  global last_particle_list
 
-    repulsion_force = pygame.Vector2()
-    for sel_particle in last_particle_list:
-        if sel_particle == cur_particle:
-            continue
-        
-        diff = sel_particle.position - cur_particle.position
-        distance = diff.length() - 2 * PARTICLE_PIXEL_RADIUS
+  repulsion_force = pygame.Vector2()
+  for sel_particle in last_particle_list:
+    if sel_particle == cur_particle:
+      continue
 
-        if distance == 0 or diff == [0, 0]:
-            #print("overlap")
-            continue
-        
-        # Calculate normalized direction vector with length 1
-        direction = diff.normalize()
-    
-        # Calculate the force magnitude based on distance
-        force_magnitude = 1E5 / (distance)**2 # Inverse square law
-    
-        repulsion_force -= direction * force_magnitude
-        
-    return repulsion_force  
+    diff = sel_particle.position - cur_particle.position
+    distance = diff.length()
+
+    if diff == [0, 0]:
+        continue
+
+    # Apply a linear falloff instead of inverse square law
+    if distance > NEAR_DISTANCE_REQUIRED:
+      force_magnitude = 0  # No repulsion beyond a certain distance
+    else:
+      # Repulsion increases linearly as particles get closer
+      force_magnitude = (1 - distance / NEAR_DISTANCE_REQUIRED) * 25  # Adjust the max force here
+
+    # Calculate normalized direction vector with length 1
+    direction = diff.normalize()
+
+    repulsion_force += direction * force_magnitude
+
+  return repulsion_force
+
 
 
 def simulate(dt):
