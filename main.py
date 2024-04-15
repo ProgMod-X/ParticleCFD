@@ -70,7 +70,9 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
     return repulsion_force  
 
 
-def simulate(dt, particle_list):
+def simulate(dt):
+    global particle_list
+
     last_particle_list = [p for p in particle_list]
     particle_list = []
     WIN.fill((0, 0, 0))
@@ -145,7 +147,7 @@ def main():
                 particle_list = []
                 setup()
         dt = deltaTime()
-        simulate(dt, particle_list)
+        simulate(dt)
 
 if __name__ == "__main__":
     main()
