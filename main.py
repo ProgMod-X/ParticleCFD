@@ -7,12 +7,12 @@ import random
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 60
-NUM_OF_PARTICLES = 5
-DAMPENING_EFFECT = .97
+FPS = 120
+NUM_OF_PARTICLES = 50
+DAMPENING_EFFECT = .5
 NEAR_DISTANCE_REQUIRED = 20
 PARTICLE_PIXEL_RADIUS = 7
-PARTICLE_METER_RADIUS = 10 # Meter
+PARTICLE_METER_RADIUS = 0.1 # Meter
 GRAVITY = 9.81
 IRL_GRAVITY = pygame.Vector2()
 IRL_GRAVITY.y = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
@@ -47,23 +47,25 @@ def force(gravity: pygame.Vector2, particle: particle.Particle) -> pygame.Vector
     return force
 
 def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
+    global last_particle_list
+
     repulsion_force = pygame.Vector2()
     for sel_particle in last_particle_list:
         if sel_particle == cur_particle:
             continue
         
         diff = sel_particle.position - cur_particle.position
-        distance = diff.length()
-        
-        if distance == 0:
-            print("overlap")
+        distance = diff.length() - 2 * PARTICLE_PIXEL_RADIUS
+
+        if distance == 0 or diff == [0, 0]:
+            # print("overlap")
             continue
         
         # Calculate normalized direction vector with length 1
         direction = diff.normalize()
         
         # Calculate the force magnitude based on distance
-        force_magnitude = 1000 / (distance**2) # Inverse square law
+        force_magnitude = 1E5 / (distance)**2 # Inverse square law
         
         repulsion_force -= direction * force_magnitude
         
@@ -72,6 +74,7 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
 
 def simulate(dt):
     global particle_list
+    global last_particle_list
 
     last_particle_list = [p for p in particle_list]
     particle_list = []
@@ -148,7 +151,7 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particle_list = []
                 setup()
-        dt = deltaTime()
+        dt = 0.001
         simulate(dt)
 
 if __name__ == "__main__":
