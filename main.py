@@ -7,16 +7,16 @@ import random
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 120
-NUM_OF_PARTICLES = 200
+FPS = 30
+NUM_OF_PARTICLES = 20
 DAMPENING_EFFECT = .75
 NEAR_DISTANCE_REQUIRED = 30 # Pixels
-PARTICLE_PIXEL_RADIUS = 10
+PARTICLE_PIXEL_RADIUS = 3
 PARTICLE_METER_RADIUS = 0.1 # Meter
 GRAVITY = 9.81
 IRL_GRAVITY = pygame.Vector2()
 IRL_GRAVITY.y = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
-MAX_FORCE_MAGNITUDE = 1E5
+MAX_FORCE_MAGNITUDE = 1E3
 
 # Colors
 GREEN = (0, 255, 0)
@@ -84,17 +84,16 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
     if diff == [0, 0]:
         continue
 
-    # Apply a linear falloff instead of inverse square law
-    if distance > NEAR_DISTANCE_REQUIRED:
-      force_magnitude = 0  # No repulsion beyond a certain distance
+    # Apply inverse square law for repulsion force
+    if distance != 0:
+        force_magnitude = MAX_FORCE_MAGNITUDE / (distance / PARTICLE_PIXEL_RADIUS)**2
     else:
-      # Repulsion increases linearly as particles get closer
-      force_magnitude = (1 - distance / NEAR_DISTANCE_REQUIRED) * 25  # Adjust the max force here
+        force_magnitude = MAX_FORCE_MAGNITUDE
 
     # Calculate normalized direction vector with length 1
     direction = diff.normalize()
 
-    repulsion_force += direction * force_magnitude
+    repulsion_force -= direction * force_magnitude
 
   return repulsion_force
 
