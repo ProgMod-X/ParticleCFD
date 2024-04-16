@@ -86,7 +86,7 @@ def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
 
     # Apply inverse square law for repulsion force
     if distance != 0:
-        force_magnitude = MAX_FORCE_MAGNITUDE / (distance / PARTICLE_PIXEL_RADIUS)**2
+        force_magnitude = MAX_FORCE_MAGNITUDE / (distance / (PARTICLE_PIXEL_RADIUS*2))**2
     else:
         force_magnitude = MAX_FORCE_MAGNITUDE
 
