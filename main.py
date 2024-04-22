@@ -11,12 +11,11 @@ FPS = 960
 NUM_OF_PARTICLES = 100
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 30  # Pixels
-PARTICLE_PIXEL_RADIUS = 7
+PARTICLE_PIXEL_RADIUS = 4
 PARTICLE_METER_RADIUS = 0.1  # Meter
-GRAVITY = 9.81
-IRL_GRAVITY = pygame.Vector2()
-IRL_GRAVITY.y = GRAVITY * (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-MAX_FORCE_MAGNITUDE = 1E3
+FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
+GRAVITY = pygame.Vector2(0, 9.81) * FORCE_COEFFICIENT
+MAX_FORCE = 1E3
 
 # Colors
 GREEN = (0, 255, 0)
@@ -44,7 +43,7 @@ def deltaTime() -> float:
 
 def force(particle: particle.Particle) -> pygame.Vector2:
     f = pygame.Vector2(0)
-    f += IRL_GRAVITY
+    f += GRAVITY
     f += repulsion(particle)
 
     return f
@@ -61,15 +60,14 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
 
         diff = cur_particle.position - sel_particle.position
 
-        if diff == [0, 0]:
-            continue
-
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = MAX_FORCE_MAGNITUDE / (distance / (PARTICLE_PIXEL_RADIUS*3))**2
+            force_magnitude = MAX_FORCE / (distance / (FORCE_COEFFICIENT))**2
         else:
-            force_magnitude = MAX_FORCE_MAGNITUDE
+            force_magnitude = MAX_FORCE * cur_particle.velocity.normalize()
+            repulsion_force -= force_magnitude
+            continue
         
         direction = diff.normalize()
 
