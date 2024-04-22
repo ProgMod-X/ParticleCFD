@@ -7,16 +7,16 @@ import random
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 30
+FPS = 60
 NUM_OF_PARTICLES = 20
-DAMPENING_EFFECT = .75
-NEAR_DISTANCE_REQUIRED = 30 # Pixels
-PARTICLE_PIXEL_RADIUS = 3
-PARTICLE_METER_RADIUS = 0.1 # Meter
+DAMPENING_EFFECT = 0.75
+NEAR_DISTANCE_REQUIRED = 30  # Pixels
+PARTICLE_PIXEL_RADIUS = 7
+PARTICLE_METER_RADIUS = 0.1  # Meter
 GRAVITY = 9.81
 IRL_GRAVITY = pygame.Vector2()
-IRL_GRAVITY.y = GRAVITY*(PARTICLE_PIXEL_RADIUS/PARTICLE_METER_RADIUS)
-MAX_FORCE_MAGNITUDE = 1E3
+IRL_GRAVITY.y = GRAVITY * (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
+MAX_FORCE_MAGNITUDE = 100
 
 # Colors
 GREEN = (0, 255, 0)
@@ -25,85 +25,76 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
 particle_list = []
-last_particle_list = []
+forces = []
 
 def deltaTime() -> float:
     # Get the current time in seconds
     current_time = time.time()
-    
+
     # Calculate the difference between the current time and the last time deltaTime was called
-    if 'last_time' not in deltaTime.__dict__:
+    if "last_time" not in deltaTime.__dict__:
         deltaTime.last_time = current_time
     delta_time = current_time - deltaTime.last_time
-    
+
     # Update the last_time for the next deltaTime call
     deltaTime.last_time = current_time
-    
+
     return delta_time
 
-def force(gravity: pygame.Vector2, particle: particle.Particle) -> pygame.Vector2:
-    force = gravity
-    force += repulsion(particle)
 
-    return force
+def force(particle: particle.Particle) -> pygame.Vector2:
+    f = pygame.Vector2(0)
+    f += IRL_GRAVITY
+    f += repulsion(particle)
 
-def repulsion(cur_particle: particle.Particle) -> pygame.Vector2:
-  global last_particle_list
+    return f
 
-  repulsion_force = pygame.Vector2()
-  for sel_particle in last_particle_list:
-    if sel_particle == cur_particle:
-      continue
 
-    diff = sel_particle.position - cur_particle.position
-    distance = diff.length()
+def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
+    global particle_list
 
-    if diff == [0, 0]:
-        continue
+    repulsion_force = pygame.Vector2(0)
 
-    # Apply inverse square law for repulsion force
-    if distance != 0:
-        force_magnitude = MAX_FORCE_MAGNITUDE / (distance / (PARTICLE_PIXEL_RADIUS*2))**2
-    else:
-        force_magnitude = MAX_FORCE_MAGNITUDE
+    for cur_particle in particle_list:
+        if cur_particle == sel_particle:
+            continue
 
-    # Calculate normalized direction vector with length 1
-    direction = diff.normalize()
+        diff = cur_particle.position - sel_particle.position
 
-    repulsion_force -= direction * force_magnitude
+        if diff == [0, 0]:
+            continue
 
-  return repulsion_force
+        distance = diff.length()
 
+        if distance != 0:
+            force_magnitude = MAX_FORCE_MAGNITUDE / (distance / (PARTICLE_PIXEL_RADIUS*2))**2
+        else:
+            force_magnitude = MAX_FORCE_MAGNITUDE
+        
+        direction = diff.normalize()
+
+        repulsion_force -= direction * force_magnitude
+
+    return repulsion_force
 
 
 def simulate(dt):
-    global particle_list
-    global last_particle_list
-
-    last_particle_list = [p for p in particle_list]
-    particle_list = []
     WIN.fill((0, 0, 0))
-    for cur_particle in last_particle_list:
-        # Calculate the new position and velocity based on the forces
-        new_velocity = cur_particle.velocity + (force(IRL_GRAVITY, cur_particle)) * dt
-        new_position = cur_particle.position + (cur_particle.velocity) * dt
-        
-        # Create a new Particle instance with the updated properties
-        new_particle = particle.Particle(new_position, new_velocity, GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT)
-        
-        # Add the updated particle to the new particle_list
-        particle_list.append(new_particle)
-        
-        # Draw the updated particle
-        new_particle.draw(WIN)
-    
+
+    # print(forces)
+    for i in range(len(particle_list)):
+        forces[i] = force(particle_list[i])
+
+    for i in range(len(particle_list)):
+        particle_list[i].velocity += forces[i] * dt
+        particle_list[i].position += particle_list[i].velocity * dt
+        particle_list[i].draw(WIN)
+
     pygame.display.flip()
 
 
-
-
 def setup():
-    global last_particle_list
+    global particle_list
 
     width, height = pygame.display.get_window_size()
 
@@ -127,15 +118,11 @@ def setup():
             pos.x = start_x + i * (PARTICLE_PIXEL_RADIUS + grid_gap) + random.uniform(-10, 10) # Add random offset
             pos.y = start_y + j * (PARTICLE_PIXEL_RADIUS + grid_gap) + random.uniform(-10, 10) # Add random offset
             particle_list.append(particle.Particle(pos, pygame.Vector2(0), GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT))
-    
-    last_particle_list = particle_list
-
+            forces.append(pygame.Vector2(0))
 
 
 def main():
-    global WIN
     global particle_list
-    global last_particle_list
 
     run = True
     clock = pygame.time.Clock()
@@ -157,6 +144,7 @@ def main():
                 setup()
         dt = 0.01
         simulate(dt)
+
 
 if __name__ == "__main__":
     main()
