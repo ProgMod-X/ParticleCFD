@@ -7,15 +7,15 @@ import random
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 960
-NUM_OF_PARTICLES = 100
+FPS = 1000
+NUM_OF_PARTICLES = 50
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 30  # Pixels
 PARTICLE_PIXEL_RADIUS = 4
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-GRAVITY = pygame.Vector2(0, 9.81) * FORCE_COEFFICIENT
-MAX_FORCE = 1E3
+MAX_FORCE = 1E4
+GRAVITY = pygame.Vector2(0, 9.81) / FORCE_COEFFICIENT
 
 # Colors
 GREEN = (0, 255, 0)
@@ -63,7 +63,7 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = MAX_FORCE / (distance / (FORCE_COEFFICIENT))**2
+            force_magnitude = MAX_FORCE / (distance * (FORCE_COEFFICIENT * 1E-2))**2
         else:
             force_magnitude = MAX_FORCE * cur_particle.velocity.normalize()
             repulsion_force -= force_magnitude
@@ -128,7 +128,7 @@ def main():
     setup()
 
     while run:
-        clock.tick(FPS)
+        #clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -140,7 +140,7 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particle_list = []
                 setup()
-        dt = 0.001
+        dt = 0.0001
         simulate(dt)
 
 
