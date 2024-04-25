@@ -10,7 +10,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 500
+NUM_OF_PARTICLES = 250
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 25  # Pixels
 PARTICLE_PIXEL_RADIUS = 4
@@ -81,7 +81,7 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
     return repulsion_force
 
 def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
-    global particle_list
+    particle_list = particle_grid.get_neighbours(sel_particle)
 
     viscosity_force = pygame.Vector2(0)
 
