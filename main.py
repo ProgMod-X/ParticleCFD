@@ -10,9 +10,9 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 250
-DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 25  # Pixels
+NUM_OF_PARTICLES = 100
+DAMPENING_EFFECT = 0.9
+NEAR_DISTANCE_REQUIRED = 15 # Pixels
 PARTICLE_PIXEL_RADIUS = 4
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
@@ -68,10 +68,8 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 5E-1))**2
+            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 6E-1))**2
         else:
-            force_magnitude = REPULSION_COEFF * cur_particle.velocity.normalize()
-            repulsion_force -= force_magnitude
             continue
 
         direction = diff.normalize()
@@ -94,9 +92,9 @@ def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1 / ((distance - PARTICLE_PIXEL_RADIUS)/PARTICLE_PIXEL_RADIUS))
+            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1E1 / ((distance)/PARTICLE_PIXEL_RADIUS))
         else:
-            viscosity_force = (cur_particle.velocity - sel_particle.velocity)
+            continue
 
     return viscosity_force
 
