@@ -7,14 +7,14 @@ import random
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
-FPS = 1000
+FPS = 100
 NUM_OF_PARTICLES = 50
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 30  # Pixels
 PARTICLE_PIXEL_RADIUS = 4
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-REPULSION_COEFF = 1E6
+REPULSION_COEFF = 1E8
 GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
 
 # Colors
@@ -45,6 +45,7 @@ def force(particle: particle.Particle) -> pygame.Vector2:
     f = pygame.Vector2(0)
     f += GRAVITY
     f += repulsion(particle)
+    f += viscosity(particle)
 
     return f
 
@@ -63,7 +64,7 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 7E-2))**2
+            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 5E-1))**2
         else:
             force_magnitude = REPULSION_COEFF * cur_particle.velocity.normalize()
             repulsion_force -= force_magnitude
@@ -75,6 +76,25 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
 
     return repulsion_force
 
+def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
+    global particle_list
+
+    viscosity_force = pygame.Vector2(0)
+
+    for cur_particle in particle_list:
+        if cur_particle == sel_particle:
+            continue
+
+        diff = cur_particle.position - sel_particle.position
+
+        distance = diff.length()
+
+        if distance != 0:
+            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (7E0 / ((distance - PARTICLE_PIXEL_RADIUS)/PARTICLE_PIXEL_RADIUS))
+        else:
+            viscosity_force = (cur_particle.velocity - sel_particle.velocity)
+
+    return viscosity_force
 
 def simulate(dt):
     WIN.fill((0, 0, 0))
@@ -119,7 +139,7 @@ def setup():
             pos = pygame.Vector2()
             pos.x = start_x + i * (PARTICLE_PIXEL_RADIUS + grid_gap) + random.uniform(-10, 10) # Add random offset
             pos.y = start_y + j * (PARTICLE_PIXEL_RADIUS + grid_gap) + random.uniform(-10, 10) # Add random offset
-            particle_list.append(particle.Particle(pos, pygame.Vector2(0), GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT))
+            particle_list.append(particle.Particle(pos, pygame.Vector2(0), (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)), PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT))
             forces.append(pygame.Vector2(0))
 
 
