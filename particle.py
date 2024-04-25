@@ -34,9 +34,9 @@ class Particle:
         self.position.x = max(self.size, min(self.position.x, win_width - self.size))
         self.position.y = max(self.size, min(self.position.y, win_height - self.size))
 
-        color_1 = self.collourvalue(self.velocity.x, self.velocity.y)
+        color_1 = self.colorvalue(self.velocity.x, self.velocity.y)
 
-        self.color = (color_1, 255 - self.collourvalue(self.velocity.x, self.velocity.y), 0)
+        self.color = (color_1, 255 - self.colorvalue(self.velocity.x, self.velocity.y), 0)
 
         pygame.draw.circle(window, self.color, self.position.xy, self.size)
     
