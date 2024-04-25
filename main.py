@@ -1,21 +1,24 @@
 import pygame
 import numpy as np
 import particle
+import grid
 import time
 import random
+import math
 
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 50
+NUM_OF_PARTICLES = 500
 DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 30  # Pixels
+NEAR_DISTANCE_REQUIRED = 25  # Pixels
 PARTICLE_PIXEL_RADIUS = 4
 PARTICLE_METER_RADIUS = 0.1  # Meter
-FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-REPULSION_COEFF = 1E6
-GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
+FORCE_COEFFICIENT = PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS
+REPULSION_COEFF = 1e6
+GRAVITY = pygame.Vector2(0, 9.81 * 1e4) / FORCE_COEFFICIENT
+GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
 # Colors
 GREEN = (0, 255, 0)
@@ -23,8 +26,9 @@ GREEN = (0, 255, 0)
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
-particle_list = []
+particle_grid = grid.Grid(WIDTH, HEIGHT, GRID_CELL_SIZE)
 forces = []
+
 
 def deltaTime() -> float:
     # Get the current time in seconds
@@ -50,8 +54,8 @@ def force(particle: particle.Particle) -> pygame.Vector2:
 
 
 def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
-    global particle_list
-
+    particle_list = particle_grid.get_neighbours(sel_particle)
+    
     repulsion_force = pygame.Vector2(0)
 
     for cur_particle in particle_list:
@@ -63,12 +67,14 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 7E-2))**2
+            force_magnitude = (
+                REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 7e-2)) ** 2
+            )
         else:
             force_magnitude = REPULSION_COEFF * cur_particle.velocity.normalize()
             repulsion_force -= force_magnitude
             continue
-        
+
         direction = diff.normalize()
 
         repulsion_force -= direction * force_magnitude
@@ -78,27 +84,35 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
 
 def simulate(dt):
     WIN.fill((0, 0, 0))
+    particles = particle_grid.get_all_particles()
 
     # print(forces)
-    for i in range(len(particle_list)):
-        forces[i] = force(particle_list[i])
+    for i in range(len(particles)):
+        forces[i] = force(particles[i])
 
-    for i in range(len(particle_list)):
-        particle_list[i].velocity += forces[i] * dt
-        particle_list[i].position += particle_list[i].velocity * dt
-        
+    for i in range(len(particles)):
+        particles[i].velocity += forces[i] * dt
+        particles[i].position += particles[i].velocity * dt
+
+    for i in range(len(particles)):
+        particle_grid.remove_particle(particles[i])
+        particle_grid.add_particle(particles[i])
+
 
 def render():
-    for p in particle_list:
+    particles = particle_grid.get_all_particles()
+
+    for p in particles:
         p.draw(WIN)
 
     pygame.display.flip()
 
 
 def setup():
-    global particle_list
+    global particle_grid
 
     width, height = pygame.display.get_window_size()
+    particle_grid = grid.Grid(width, height, GRID_CELL_SIZE)
 
     grid_rows = int(np.sqrt(NUM_OF_PARTICLES))
     grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
@@ -117,14 +131,33 @@ def setup():
     for i in range(grid_rows):
         for j in range(grid_cols):
             pos = pygame.Vector2()
-            pos.x = start_x + i * (PARTICLE_PIXEL_RADIUS + grid_gap) + random.uniform(-10, 10) # Add random offset
-            pos.y = start_y + j * (PARTICLE_PIXEL_RADIUS + grid_gap) + random.uniform(-10, 10) # Add random offset
-            particle_list.append(particle.Particle(pos, pygame.Vector2(0), GREEN, PARTICLE_PIXEL_RADIUS, DAMPENING_EFFECT))
+            pos.x = (
+                start_x
+                + i * (PARTICLE_PIXEL_RADIUS + grid_gap)
+                + random.uniform(-10, 10)
+            )  # Add random offset
+            pos.y = (
+                start_y
+                + j * (PARTICLE_PIXEL_RADIUS + grid_gap)
+                + random.uniform(-10, 10)
+            )  # Add random offset
+            p = particle.Particle(
+                pos,
+                pygame.Vector2(0),
+                GREEN,
+                PARTICLE_PIXEL_RADIUS,
+                DAMPENING_EFFECT,
+                (
+                    math.floor(pos.x / GRID_CELL_SIZE),
+                    math.floor(pos.y / GRID_CELL_SIZE),
+                ),
+            )
+            particle_grid.add_particle(p)
             forces.append(pygame.Vector2(0))
 
 
 def main():
-    global particle_list
+    global particle_grid
 
     run = True
     clock = pygame.time.Clock()
@@ -133,7 +166,7 @@ def main():
     setup()
 
     while run:
-        #clock.tick(FPS)
+        # clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -143,7 +176,7 @@ def main():
                     run = False
                     pygame.quit()
             elif event.type == pygame.VIDEORESIZE:
-                particle_list = []
+                particle_grid = None
                 setup()
         dt = 0.0001
         simulate(dt)

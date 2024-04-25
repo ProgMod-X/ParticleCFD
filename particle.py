@@ -9,12 +9,14 @@ class Particle:
         color: tuple,
         size: int,
         dampening_effect: float,
+        grid_cell
     ):
         self.position = posistion
         self.color = color
         self.velocity = velocity
         self.size = size
         self.dampening_effect = -dampening_effect
+        self.grid_cell = grid_cell
 
     def draw(self, window):
         win_width, win_height = window.get_size()
