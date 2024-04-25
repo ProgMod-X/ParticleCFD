@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import math
 
 class Particle:
     def __init__(
@@ -33,4 +34,16 @@ class Particle:
         self.position.x = max(self.size, min(self.position.x, win_width - self.size))
         self.position.y = max(self.size, min(self.position.y, win_height - self.size))
 
+        color_1 = self.collourvalue(self.velocity.x, self.velocity.y)
+
+        self.color = (color_1, 255 - self.collourvalue(self.velocity.x, self.velocity.y), 0)
+
         pygame.draw.circle(window, self.color, self.position.xy, self.size)
+    
+    def collourvalue(self, x, y):
+        a =  0.40 * (math.sqrt(x**2 + y**2))
+        if a > 255:
+            a = 255
+        elif a < 1:
+            a = 1
+        return a
