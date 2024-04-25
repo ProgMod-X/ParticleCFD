@@ -14,8 +14,8 @@ NEAR_DISTANCE_REQUIRED = 30  # Pixels
 PARTICLE_PIXEL_RADIUS = 4
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-MAX_FORCE = 1E4
-GRAVITY = pygame.Vector2(0, 9.81) / FORCE_COEFFICIENT
+REPULSION_COEFF = 1E6
+GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
 
 # Colors
 GREEN = (0, 255, 0)
@@ -63,9 +63,9 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = MAX_FORCE / (distance * (FORCE_COEFFICIENT * 1E-2))**2
+            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 7E-2))**2
         else:
-            force_magnitude = MAX_FORCE * cur_particle.velocity.normalize()
+            force_magnitude = REPULSION_COEFF * cur_particle.velocity.normalize()
             repulsion_force -= force_magnitude
             continue
         
@@ -86,7 +86,11 @@ def simulate(dt):
     for i in range(len(particle_list)):
         particle_list[i].velocity += forces[i] * dt
         particle_list[i].position += particle_list[i].velocity * dt
-        particle_list[i].draw(WIN)
+        
+
+def render():
+    for p in particle_list:
+        p.draw(WIN)
 
     pygame.display.flip()
 
@@ -124,6 +128,7 @@ def main():
 
     run = True
     clock = pygame.time.Clock()
+    simcount = 0
 
     setup()
 
@@ -142,6 +147,9 @@ def main():
                 setup()
         dt = 0.0001
         simulate(dt)
+        if simcount % 10 == 0:
+            render()
+        simcount += 1
 
 
 if __name__ == "__main__":
