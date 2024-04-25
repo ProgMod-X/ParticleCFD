@@ -40,7 +40,7 @@ class Particle:
 
         pygame.draw.circle(window, self.color, self.position.xy, self.size)
     
-    def collourvalue(self, x, y):
+    def colorvalue(self, x, y):
         a =  0.40 * (math.sqrt(x**2 + y**2))
         if a > 255:
             a = 255
