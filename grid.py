@@ -35,19 +35,11 @@ class Grid:
         cell.remove(particle)
 
     def get_neighbours(self, particle: particle.Particle) -> list[particle.Particle]:
-        top_left = [
-            math.floor((particle.position.x - particle.size) / self.size),
-            math.floor((particle.position.y - particle.size) / self.size),
-        ]
-
-        bottom_right = [
-            math.floor((particle.position.x + particle.size) / self.size),
-            math.floor((particle.position.y + particle.size) / self.size),
-        ]
+        idx = particle.grid_cell
 
         neighbours = []
-        for i in range(top_left[0], bottom_right[0] + 1):
-            for j in range(top_left[1], bottom_right[1] + 1):
+        for i in range(idx[0] - 1, idx[0] + 2):
+            for j in range(idx[1], idx[1] + 2):
                 if i < 0 or j < 0 or i >= self.num_of_cols or j >= self.num_of_rows:
                     continue
                 c = self.cells[i][j]
