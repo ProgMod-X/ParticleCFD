@@ -20,6 +20,11 @@ class Grid:
         col_idx = math.floor(particle.position.x / self.size)
         row_idx = math.floor(particle.position.y / self.size)
 
+        # Clamp column index to stay within range [0, num_of_cols - 1]
+        col_idx = max(0, min(col_idx, self.num_of_cols - 1))
+        # Clamp row index to stay within range [0, num_of_rows - 1]
+        row_idx = max(0, min(row_idx, self.num_of_rows - 1))
+
         self.cells[col_idx][row_idx].append(particle)
         particle.grid_cell = (col_idx, row_idx)
 

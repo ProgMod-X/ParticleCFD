@@ -94,7 +94,7 @@ def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (7E0 / ((distance - PARTICLE_PIXEL_RADIUS)/PARTICLE_PIXEL_RADIUS))
+            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1 / ((distance - PARTICLE_PIXEL_RADIUS)/PARTICLE_PIXEL_RADIUS))
         else:
             viscosity_force = (cur_particle.velocity - sel_particle.velocity)
 
