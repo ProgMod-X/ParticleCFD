@@ -139,9 +139,13 @@ def setup():
         grid_rows -= 1
         grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
 
-    # Calculate starting positions for the grid
-    start_x = width // 2 - (grid_rows // 2) * (PARTICLE_PIXEL_RADIUS + grid_gap)
-    start_y = height // 2 - (grid_cols // 2) * (PARTICLE_PIXEL_RADIUS + grid_gap)
+    # Calculate starting positions for the grid (80% of screen dimensions)
+    start_x = width * 0.1  # Start from 10% of the width
+    start_y = height * 0.1  # Start from 10% of the height
+
+    # Calculate the gap between particles to fit the 80% area
+    gap_x = (width * 0.8 - grid_rows // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_rows - 1)
+    gap_y = (height * 0.8 - grid_cols // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_cols - 1)
 
     # Place particles in the grid with random offsets
     for i in range(grid_rows):
@@ -149,12 +153,12 @@ def setup():
             pos = pygame.Vector2()
             pos.x = (
                 start_x
-                + i * (PARTICLE_PIXEL_RADIUS + grid_gap)
+                + i * (PARTICLE_PIXEL_RADIUS + gap_x)
                 + random.uniform(-10, 10)
             )  # Add random offset
             pos.y = (
                 start_y
-                + j * (PARTICLE_PIXEL_RADIUS + grid_gap)
+                + j * (PARTICLE_PIXEL_RADIUS + gap_y)
                 + random.uniform(-10, 10)
             )  # Add random offset
             p = particle.Particle(
