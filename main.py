@@ -15,9 +15,9 @@ DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 25  # Pixels
 PARTICLE_PIXEL_RADIUS = 4
 PARTICLE_METER_RADIUS = 0.1  # Meter
-FORCE_COEFFICIENT = PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS
-REPULSION_COEFF = 1e6
-GRAVITY = pygame.Vector2(0, 9.81 * 1e4) / FORCE_COEFFICIENT
+FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
+REPULSION_COEFF = 1E8
+GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
 GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
 # Colors
@@ -49,6 +49,7 @@ def force(particle: particle.Particle) -> pygame.Vector2:
     f = pygame.Vector2(0)
     f += GRAVITY
     f += repulsion(particle)
+    f += viscosity(particle)
 
     return f
 
@@ -67,9 +68,7 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = (
-                REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 7e-2)) ** 2
-            )
+            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 5E-1))**2
         else:
             force_magnitude = REPULSION_COEFF * cur_particle.velocity.normalize()
             repulsion_force -= force_magnitude
@@ -81,6 +80,25 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
 
     return repulsion_force
 
+def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
+    global particle_list
+
+    viscosity_force = pygame.Vector2(0)
+
+    for cur_particle in particle_list:
+        if cur_particle == sel_particle:
+            continue
+
+        diff = cur_particle.position - sel_particle.position
+
+        distance = diff.length()
+
+        if distance != 0:
+            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (7E0 / ((distance - PARTICLE_PIXEL_RADIUS)/PARTICLE_PIXEL_RADIUS))
+        else:
+            viscosity_force = (cur_particle.velocity - sel_particle.velocity)
+
+    return viscosity_force
 
 def simulate(dt):
     WIN.fill((0, 0, 0))
