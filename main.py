@@ -10,10 +10,10 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 100
-DAMPENING_EFFECT = 0.9
-NEAR_DISTANCE_REQUIRED = 15 # Pixels
-PARTICLE_PIXEL_RADIUS = 4
+NUM_OF_PARTICLES = 50
+DAMPENING_EFFECT = 0.75
+NEAR_DISTANCE_REQUIRED = 15  # Pixels
+PARTICLE_PIXEL_RADIUS = 4.5
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
 REPULSION_COEFF = 1E8
@@ -109,8 +109,6 @@ def simulate(dt):
     for i in range(len(particles)):
         particles[i].velocity += forces[i] * dt
         particles[i].position += particles[i].velocity * dt
-
-    for i in range(len(particles)):
         particle_grid.remove_particle(particles[i])
         particle_grid.add_particle(particles[i])
 
@@ -144,8 +142,8 @@ def setup():
     start_y = height * 0.1  # Start from 10% of the height
 
     # Calculate the gap between particles to fit the 80% area
-    gap_x = (width * 0.8 - grid_rows // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_rows - 1)
-    gap_y = (height * 0.8 - grid_cols // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_cols - 1)
+    gap_x = (width * 0.8 - grid_rows // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_rows)
+    gap_y = (height * 0.8 - grid_cols // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_cols)
 
     # Place particles in the grid with random offsets
     for i in range(grid_rows):
