@@ -10,10 +10,10 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 100
+NUM_OF_PARTICLES = 200
 DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 15  # Pixels
-PARTICLE_PIXEL_RADIUS = 4.5
+NEAR_DISTANCE_REQUIRED = 10  # Pixels
+PARTICLE_PIXEL_RADIUS = 3.5
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
 REPULSION_COEFF = 1E8
@@ -68,7 +68,7 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
 
         if distance != 0:
-            force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 6E-1))**2
+            force_magnitude = REPULSION_COEFF / ((distance) * (FORCE_COEFFICIENT * 7E-1))**2
         else:
             continue
 
