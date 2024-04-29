@@ -6,6 +6,10 @@ import time
 import random
 import math
 
+import line_profiler
+# kernprof -l .\main.py
+# python.exe -m line_profiler .\main.py.lprof
+
 pygame.init()
 
 WIDTH, HEIGHT = 400, 400
@@ -13,7 +17,7 @@ FPS = 1000
 NUM_OF_PARTICLES = 200
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 10  # Pixels
-PARTICLE_PIXEL_RADIUS = 3.5
+PARTICLE_PIXEL_RADIUS = 4.5
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
 REPULSION_COEFF = 1E8
@@ -45,6 +49,7 @@ def deltaTime() -> float:
     return delta_time
 
 
+@line_profiler.profile
 def force(particle: particle.Particle) -> pygame.Vector2:
     f = pygame.Vector2(0)
     f += GRAVITY
@@ -54,6 +59,7 @@ def force(particle: particle.Particle) -> pygame.Vector2:
     return f
 
 
+@line_profiler.profile
 def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
     particle_list = particle_grid.get_neighbours(sel_particle)
     
@@ -78,6 +84,7 @@ def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
 
     return repulsion_force
 
+@line_profiler.profile
 def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
     particle_list = particle_grid.get_neighbours(sel_particle)
 
@@ -98,6 +105,7 @@ def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
 
     return viscosity_force
 
+@line_profiler.profile
 def simulate(dt):
     WIN.fill((0, 0, 0))
     particles = particle_grid.get_all_particles()
@@ -113,6 +121,7 @@ def simulate(dt):
         particle_grid.add_particle(particles[i])
 
 
+@line_profiler.profile
 def render():
     particles = particle_grid.get_all_particles()
 
@@ -122,6 +131,7 @@ def render():
     pygame.display.flip()
 
 
+@line_profiler.profile
 def setup():
     global particle_grid
 
@@ -173,7 +183,7 @@ def setup():
             particle_grid.add_particle(p)
             forces.append(pygame.Vector2(0))
 
-
+@line_profiler.profile
 def main():
     global particle_grid
 

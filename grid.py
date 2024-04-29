@@ -1,6 +1,6 @@
 import particle
-import math
-
+import numpy as np
+import line_profiler
 
 class Grid:
     def __init__(self, screen_width: int, screen_height: int, cell_size: int) -> None:
@@ -10,8 +10,8 @@ class Grid:
         self.cells = {}  # Use a dictionary for efficient neighbor lookup
 
     def add_particle(self, particle: particle.Particle) -> None:
-        col_idx = int(math.floor(particle.position.x / self.size))
-        row_idx = int(math.floor(particle.position.y / self.size))
+        col_idx = int(np.floor(particle.position.x / self.size))
+        row_idx = int(np.floor(particle.position.y / self.size))
 
         cell = self.cells.get((col_idx, row_idx), [])  # Get or create cell list
         cell.append(particle)
@@ -27,15 +27,19 @@ class Grid:
             if not cell:
                 del self.cells[(col_idx, row_idx)]
 
+    @line_profiler.profile
     def get_neighbours(self, particle: particle.Particle) -> list[particle.Particle]:
         col_idx, row_idx = particle.grid_cell
         neighbours = []
         search_range = 1  # Look for neighbors within a 1-cell radius
 
+        grid_bound_x = self.width // self.size
+        grid_bound_y = self.height // self.size
+
         for i in range(col_idx - search_range, col_idx + search_range + 1):
             for j in range(row_idx - search_range, row_idx + search_range + 1):
                 # Ensure valid cell indices within grid bounds
-                if 0 <= i < self.width // self.size and 0 <= j < self.height // self.size:
+                if 0 <= i < grid_bound_x and 0 <= j < grid_bound_y:
                     cell = self.cells.get((i, j), [])
                     neighbours.extend(cell)
         if particle in neighbours:
