@@ -196,7 +196,7 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particle_grid = None
                 setup()
-        dt = 0.0001
+        dt = 0.0005
         simulate(dt)
         if simcount % 10 == 0:
             render()
