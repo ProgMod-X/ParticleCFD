@@ -12,11 +12,11 @@ WIDTH, HEIGHT = 400, 400
 FPS = 1000
 NUM_OF_PARTICLES = 200
 DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 10  # Pixels
-PARTICLE_PIXEL_RADIUS = 3.5
+NEAR_DISTANCE_REQUIRED = 9  # Pixels
+PARTICLE_PIXEL_RADIUS = 3
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-REPULSION_COEFF = 1E8
+REPULSION_COEFF = 1E9
 GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
 GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
@@ -46,55 +46,40 @@ def deltaTime() -> float:
 
 
 def force(particle: particle.Particle) -> pygame.Vector2:
+    particle_list = particle_grid.get_neighbours(particle)
     f = pygame.Vector2(0)
     f += GRAVITY
-    f += repulsion(particle)
-    f += viscosity(particle)
+    
+    for cur_particle in particle_list:
+        if cur_particle == particle:
+            continue
+
+        diff = cur_particle.position - particle.position
+        distance = diff.length()
+        
+        f += repulsion(diff, distance)
+        f += viscosity(particle, cur_particle, distance)
 
     return f
 
 
-def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
-    particle_list = particle_grid.get_neighbours(sel_particle)
-    
+def repulsion(diff, distance) -> pygame.Vector2:
     repulsion_force = pygame.Vector2(0)
 
-    for cur_particle in particle_list:
-        if cur_particle == sel_particle:
-            continue
+    if distance != 0:
+        force_magnitude = REPULSION_COEFF / ((distance) * (FORCE_COEFFICIENT * 2))**2
 
-        diff = cur_particle.position - sel_particle.position
+    direction = diff.normalize()
 
-        distance = diff.length()
-
-        if distance != 0:
-            force_magnitude = REPULSION_COEFF / ((distance) * (FORCE_COEFFICIENT * 7E-1))**2
-        else:
-            continue
-
-        direction = diff.normalize()
-
-        repulsion_force -= direction * force_magnitude
+    repulsion_force -= direction * force_magnitude
 
     return repulsion_force
 
-def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
-    particle_list = particle_grid.get_neighbours(sel_particle)
-
+def viscosity(sel_particle: particle.Particle, cur_particle, distance) -> pygame.Vector2:
     viscosity_force = pygame.Vector2(0)
-
-    for cur_particle in particle_list:
-        if cur_particle == sel_particle:
-            continue
-
-        diff = cur_particle.position - sel_particle.position
-
-        distance = diff.length()
-
-        if distance != 0:
-            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1E1 / ((distance)/PARTICLE_PIXEL_RADIUS))
-        else:
-            continue
+    
+    if distance != 0:
+        viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1 / ((distance)/PARTICLE_PIXEL_RADIUS))
 
     return viscosity_force
 
@@ -196,7 +181,7 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particle_grid = None
                 setup()
-        dt = 0.0001
+        dt = 0.0004
         simulate(dt)
         if simcount % 10 == 0:
             render()
