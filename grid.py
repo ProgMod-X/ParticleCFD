@@ -27,7 +27,7 @@ class Grid:
             if not cell:
                 del self.cells[(col_idx, row_idx)]
 
-    # @line_profiler.profile
+    @line_profiler.profile
     def get_neighbours(self, particle: particle.Particle) -> list[particle.Particle]:
         col_idx, row_idx = particle.grid_cell
         neighbours = []
