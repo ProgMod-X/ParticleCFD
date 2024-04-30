@@ -16,11 +16,11 @@ WIDTH, HEIGHT = 400, 400
 FPS = 1000
 NUM_OF_PARTICLES = 200
 DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 9  # Pixels
-PARTICLE_PIXEL_RADIUS = 3
+NEAR_DISTANCE_REQUIRED = 10  # Pixels
+PARTICLE_PIXEL_RADIUS = 4.5
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-REPULSION_COEFF = 1E9
+REPULSION_COEFF = 1E8
 GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
 GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
@@ -49,47 +49,64 @@ def deltaTime() -> float:
     return delta_time
 
 
-@line_profiler.profile
+# @line_profiler.profile
 def force(particle: particle.Particle) -> pygame.Vector2:
-    particle_list = particle_grid.get_neighbours(particle)
     f = pygame.Vector2(0)
     f += GRAVITY
-    
-    for cur_particle in particle_list:
-        if cur_particle == particle:
-            continue
 
-        diff = cur_particle.position - particle.position
-        distance = diff.length()
-        
-        f += repulsion(diff, distance)
-        f += viscosity(particle, cur_particle, distance)
+    f += repulsion(particle)
+    f += viscosity(particle)
 
     return f
 
 
-def repulsion(diff, distance) -> pygame.Vector2:
+# @line_profiler.profile
+def repulsion(sel_particle: particle.Particle) -> pygame.Vector2:
+    particle_list = particle_grid.get_neighbours(sel_particle)
+    
     repulsion_force = pygame.Vector2(0)
 
-    if distance != 0:
-        force_magnitude = REPULSION_COEFF / ((distance) * (FORCE_COEFFICIENT * 2))**2
+    for cur_particle in particle_list:
+        if cur_particle == sel_particle:
+            continue
 
-    direction = diff.normalize()
+        diff = cur_particle.position - sel_particle.position
 
-    repulsion_force -= direction * force_magnitude
+        distance = diff.length()
+
+        if distance != 0:
+            force_magnitude = REPULSION_COEFF / ((distance) * (FORCE_COEFFICIENT * 7E-1))**2
+        else:
+            continue
+
+        direction = diff.normalize()
+
+        repulsion_force -= direction * force_magnitude
 
     return repulsion_force
 
-@line_profiler.profile
-def viscosity(sel_particle: particle.Particle, cur_particle, distance) -> pygame.Vector2:
+# @line_profiler.profile
+def viscosity(sel_particle: particle.Particle) -> pygame.Vector2:
+    particle_list = particle_grid.get_neighbours(sel_particle)
+
     viscosity_force = pygame.Vector2(0)
-    
-    if distance != 0:
-        viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1 / ((distance)/PARTICLE_PIXEL_RADIUS))
+
+    for cur_particle in particle_list:
+        if cur_particle == sel_particle:
+            continue
+
+        diff = cur_particle.position - sel_particle.position
+
+        distance = diff.length()
+
+        if distance != 0:
+            viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1E1 / ((distance)/PARTICLE_PIXEL_RADIUS))
+        else:
+            continue
 
     return viscosity_force
 
-@line_profiler.profile
+# @line_profiler.profile
 def simulate(dt):
     WIN.fill((0, 0, 0))
     particles = particle_grid.get_all_particles()
@@ -105,7 +122,7 @@ def simulate(dt):
         particle_grid.add_particle(particles[i])
 
 
-@line_profiler.profile
+# @line_profiler.profile
 def render():
     particles = particle_grid.get_all_particles()
 
@@ -115,7 +132,7 @@ def render():
     pygame.display.flip()
 
 
-@line_profiler.profile
+# @line_profiler.profile
 def setup():
     global particle_grid
 
@@ -167,7 +184,7 @@ def setup():
             particle_grid.add_particle(p)
             forces.append(pygame.Vector2(0))
 
-@line_profiler.profile
+# @line_profiler.profile
 def main():
     global particle_grid
 
@@ -190,7 +207,7 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particle_grid = None
                 setup()
-        dt = 0.0004
+        dt = 0.0005
         simulate(dt)
         if simcount % 10 == 0:
             render()
