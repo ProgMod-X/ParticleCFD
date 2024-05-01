@@ -31,6 +31,31 @@ class Rectangle:
         )
 
 
+class Circle:
+    def __init__(self, x, y, r) -> None:
+        self.x = x
+        self.y = y
+        self.r = r
+        self.rSquared = self.r**2
+    
+    def contains(self, point):
+        d = (point.x - self.x)**2 + (point.y - self.y)**2
+        return d <= self.rSquared
+
+    def intersects(self, range):
+        x_dist = abs(range.x - self.x)
+        y_dist = abs(range.y - self.y)
+
+        edges = (x_dist - range.w)**2 + (y_dist - range.h)**2
+
+        if x_dist > (self.r + range.w) or y_dist > (self.r + range.h):
+            return False
+        
+        if x_dist <= range.w or y_dist <= range.h:
+            return True
+        
+        return edges <= self.rSquared
+
 class QuadTree:
     def __init__(self, boundary, n):
         self.boundary = boundary
