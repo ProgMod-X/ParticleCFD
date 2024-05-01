@@ -6,7 +6,7 @@ import time
 import random
 import math
 
-import line_profiler
+# import line_profiler
 # kernprof -l .\main.py
 # python.exe -m line_profiler .\main.py.lprof
 
@@ -20,7 +20,7 @@ NEAR_DISTANCE_REQUIRED = 9  # Pixels
 PARTICLE_PIXEL_RADIUS = 3
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-REPULSION_COEFF = 1E9
+REPULSION_COEFF = 1E8
 GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
 GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
@@ -86,7 +86,7 @@ def repulsion(distance, direction) -> pygame.Vector2:
 def viscosity(cur_particle: particle.Particle, sel_particle: particle.Particle, distance) -> pygame.Vector2:
     viscosity_force = pygame.Vector2(0)
 
-    viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (2 / (distance/PARTICLE_PIXEL_RADIUS))
+    viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1 / (distance/PARTICLE_PIXEL_RADIUS))
 
     return viscosity_force
 

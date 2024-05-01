@@ -7,47 +7,51 @@ class Grid:
         self.width = screen_width
         self.height = screen_height
         self.size = cell_size
-        self.cells = {}  # Use a dictionary for efficient neighbor lookup
+        self.cells = np.empty((int(np.ceil(screen_width / cell_size)), int(np.ceil(screen_height / cell_size))), dtype=object)
 
+    # @line_profiler.profile
     def add_particle(self, particle: particle.Particle) -> None:
         col_idx = int(np.floor(particle.position.x / self.size))
         row_idx = int(np.floor(particle.position.y / self.size))
 
-        cell = self.cells.get((col_idx, row_idx), [])  # Get or create cell list
-        cell.append(particle)
-        self.cells[(col_idx, row_idx)] = cell
+        if self.cells[col_idx, row_idx] is None:
+            self.cells[col_idx, row_idx] = [particle]
+        else:
+            self.cells[col_idx, row_idx].append(particle)
+
         particle.grid_cell = (col_idx, row_idx)
 
+    # @line_profiler.profile
     def remove_particle(self, particle: particle.Particle) -> None:
         col_idx, row_idx = particle.grid_cell
-        cell = self.cells.get((col_idx, row_idx), [])
+        cell = self.cells[col_idx, row_idx]
 
-        if cell:  # Check if cell exists before removal
+        if cell:  # Check if cell is not empty
             cell.remove(particle)
             if not cell:
-                del self.cells[(col_idx, row_idx)]
+                self.cells[col_idx, row_idx] = None
 
-    @line_profiler.profile
+    # @line_profiler.profile
     def get_neighbours(self, particle: particle.Particle) -> list[particle.Particle]:
         col_idx, row_idx = particle.grid_cell
         neighbours = []
         search_range = 1  # Look for neighbors within a 1-cell radius
 
-        grid_bound_x = self.width // self.size
-        grid_bound_y = self.height // self.size
+        grid_bound_x, grid_bound_y = self.cells.shape
 
-        for i in range(col_idx - search_range, col_idx + search_range + 1):
-            for j in range(row_idx - search_range, row_idx + search_range + 1):
-                # Ensure valid cell indices within grid bounds
-                if 0 <= i < grid_bound_x and 0 <= j < grid_bound_y:
-                    cell = self.cells.get((i, j), [])
+        for i in range(max(0, col_idx - search_range), min(col_idx + search_range + 1, grid_bound_x)):
+            for j in range(max(0, row_idx - search_range), min(row_idx + search_range + 1, grid_bound_y)):
+                cell = self.cells[i, j]
+                if cell is not None:
                     neighbours.extend(cell)
         if particle in neighbours:
             neighbours.remove(particle)  # Exclude the particle itself
         return neighbours
 
+    # @line_profiler.profile
     def get_all_particles(self) -> list[particle.Particle]:
         all_particles = []
-        for cell in self.cells.values():
-            all_particles.extend(cell)
+        for cell in self.cells.flat:
+            if cell is not None:
+                all_particles.extend(cell)
         return all_particles
