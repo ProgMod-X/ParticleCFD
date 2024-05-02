@@ -5,6 +5,12 @@ import grid
 import time
 import random
 import math
+from space import (
+    get_key_from_hash,
+    hash_cell,
+    position_to_cell_coord,
+    update_spatial_lookup,
+)
 
 # import line_profiler
 # kernprof -l .\main.py
@@ -14,14 +20,14 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 300
+NUM_OF_PARTICLES = 1000
 DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 9  # Pixels
+NEAR_DISTANCE_REQUIRED = 10  # Pixels
 PARTICLE_PIXEL_RADIUS = 3
 PARTICLE_METER_RADIUS = 0.1  # Meter
-FORCE_COEFFICIENT = (PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS)
-REPULSION_COEFF = 1E9
-GRAVITY = pygame.Vector2(0, 9.81*1E4) / FORCE_COEFFICIENT
+FORCE_COEFFICIENT = PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS
+REPULSION_COEFF = 1e9
+GRAVITY = pygame.Vector2(0, 9.81 * 1e4) / FORCE_COEFFICIENT
 GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
 # Colors
@@ -30,8 +36,22 @@ GREEN = (0, 255, 0)
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
-particle_grid = grid.Grid(WIDTH, HEIGHT, GRID_CELL_SIZE)
+OFFSETS2D = [
+    (0, 0),
+    (1, 0),
+    (-1, 0),
+    (0, 1),
+    (0, -1),
+    (1, 1),
+    (-1, -1),
+    (-1, 1),
+    (1, -1),
+]
+
 forces = []
+start_indices = []
+spatial_lookup = []
+particles = []
 
 
 def deltaTime() -> float:
@@ -50,24 +70,21 @@ def deltaTime() -> float:
 
 
 # @line_profiler.profile
-def force(particle: particle.Particle) -> pygame.Vector2:
+def force(
+    sel_particle: particle.Particle, cur_particle: particle.Particle
+) -> pygame.Vector2:
     f = pygame.Vector2(0)
-    f += GRAVITY
+    diff = cur_particle.position - sel_particle.position
 
-    particle_list = particle_grid.get_neighbours(particle)
+    distance = diff.length()
 
-    for cur_particle in particle_list:
-        diff = cur_particle.position - particle.position
+    if distance == 0:
+        return pygame.Vector2(0)
 
-        distance = diff.length()
+    direction = diff.normalize()
 
-        if distance == 0:
-            continue
-
-        direction = diff.normalize()
-
-        f += repulsion(distance, direction)
-        f += viscosity(cur_particle, particle, distance)
+    f += repulsion(distance, direction)
+    f += viscosity(cur_particle, sel_particle, distance)
 
     return f
 
@@ -76,40 +93,78 @@ def force(particle: particle.Particle) -> pygame.Vector2:
 def repulsion(distance, direction) -> pygame.Vector2:
     repulsion_force = pygame.Vector2(0)
 
-    force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 2))**2
+    force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 2)) ** 2
 
     repulsion_force -= direction * force_magnitude
 
     return repulsion_force
 
+
 # @line_profiler.profile
-def viscosity(cur_particle: particle.Particle, sel_particle: particle.Particle, distance) -> pygame.Vector2:
+def viscosity(
+    cur_particle: particle.Particle, sel_particle: particle.Particle, distance
+) -> pygame.Vector2:
     viscosity_force = pygame.Vector2(0)
 
-    viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (1 / ((distance)/(PARTICLE_PIXEL_RADIUS*1.5)))
+    viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (
+        1 / ((distance) / (PARTICLE_PIXEL_RADIUS * 1.5))
+    )
 
     return viscosity_force
 
+
+########
+
+
+def for_each_point_within_radius(particle):
+    radius = 10
+    center_x, center_y = position_to_cell_coord(particle, radius)
+    sqr_radius = radius**2
+
+    for offset_x, offset_y in OFFSETS2D:
+        key = get_key_from_hash(
+            hash_cell(center_x + offset_x, center_y + offset_y), spatial_lookup
+        )
+        cell_start_index = start_indices[key]
+        forces = pygame.Vector2(0)
+
+        for i in range(cell_start_index, len(spatial_lookup)):
+            if spatial_lookup[i].cell_key != key:
+                break
+
+            particle_index = spatial_lookup[i].particle_index
+            sqr_distance = (
+                particles[particle_index].position - particle.position
+            ).magnitude_squared()
+
+            if sqr_distance <= sqr_radius:
+                # forces += GRAVITY
+                forces += force(particle, particles[particle_index])
+
+        return forces
+
+
+########
 # @line_profiler.profile
 def simulate(dt):
     WIN.fill((0, 0, 0))
-    particles = particle_grid.get_all_particles()
+    update_spatial_lookup(
+        particles, NEAR_DISTANCE_REQUIRED, spatial_lookup, start_indices
+    )
 
-    # print(forces)
     for i in range(len(particles)):
-        forces[i] = force(particles[i])
+        # forces[i] = force(particles[i])
+        forces[i] = for_each_point_within_radius(particles[i])
+        # if forces[i].x != 0 or forces[i].y != 0:
+        # print(forces[i], i, particles[i])
 
     for i in range(len(particles)):
         particles[i].velocity += forces[i] * dt
         particles[i].position += particles[i].velocity * dt
-        particle_grid.remove_particle(particles[i])
-        particle_grid.add_particle(particles[i])
 
 
 # @line_profiler.profile
 def render():
-    particles = particle_grid.get_all_particles()
-
     for p in particles:
         p.draw(WIN)
 
@@ -118,10 +173,7 @@ def render():
 
 # @line_profiler.profile
 def setup():
-    global particle_grid
-
     width, height = pygame.display.get_window_size()
-    particle_grid = grid.Grid(width, height, GRID_CELL_SIZE)
 
     grid_rows = int(np.sqrt(NUM_OF_PARTICLES))
     grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
@@ -137,22 +189,22 @@ def setup():
     start_y = height * 0.1  # Start from 10% of the height
 
     # Calculate the gap between particles to fit the 80% area
-    gap_x = (width * 0.8 - grid_rows // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_rows)
-    gap_y = (height * 0.8 - grid_cols // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (grid_cols)
+    gap_x = (width * 0.8 - grid_rows // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (
+        grid_rows
+    )
+    gap_y = (height * 0.8 - grid_cols // 2 * (PARTICLE_PIXEL_RADIUS + grid_gap)) / (
+        grid_cols
+    )
 
     # Place particles in the grid with random offsets
     for i in range(grid_rows):
         for j in range(grid_cols):
             pos = pygame.Vector2()
             pos.x = (
-                start_x
-                + i * (PARTICLE_PIXEL_RADIUS + gap_x)
-                + random.uniform(-10, 10)
+                start_x + i * (PARTICLE_PIXEL_RADIUS + gap_x) + random.uniform(-10, 10)
             )  # Add random offset
             pos.y = (
-                start_y
-                + j * (PARTICLE_PIXEL_RADIUS + gap_y)
-                + random.uniform(-10, 10)
+                start_y + j * (PARTICLE_PIXEL_RADIUS + gap_y) + random.uniform(-10, 10)
             )  # Add random offset
             p = particle.Particle(
                 pos,
@@ -165,15 +217,16 @@ def setup():
                     math.floor(pos.y / GRID_CELL_SIZE),
                 ),
             )
-            particle_grid.add_particle(p)
+            particles.append(p)
+            spatial_lookup.append(987654321)
+            start_indices.append(987654321)
             forces.append(pygame.Vector2(0))
+
 
 # @line_profiler.profile
 def main():
-    global particle_grid
-
+    global particles, spatial_lookup, start_indices
     run = True
-    clock = pygame.time.Clock()
     simcount = 0
 
     setup()
@@ -189,7 +242,9 @@ def main():
                     run = False
                     pygame.quit()
             elif event.type == pygame.VIDEORESIZE:
-                particle_grid = None
+                particles = []
+                spatial_lookup = []
+                start_indices = []
                 setup()
         dt = 0.0003
         simulate(dt)
