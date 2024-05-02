@@ -23,10 +23,10 @@ FPS = 1000
 NUM_OF_PARTICLES = 1000
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 10  # Pixels
-PARTICLE_PIXEL_RADIUS = 3
+PARTICLE_PIXEL_RADIUS = 2
 PARTICLE_METER_RADIUS = 0.1  # Meter
 FORCE_COEFFICIENT = PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS
-REPULSION_COEFF = 1e9
+REPULSION_COEFF = 1e8
 GRAVITY = pygame.Vector2(0, 9.81 * 1e4) / FORCE_COEFFICIENT
 GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
@@ -70,10 +70,9 @@ def deltaTime() -> float:
 
 
 # @line_profiler.profile
-def force(
-    sel_particle: particle.Particle, cur_particle: particle.Particle
-) -> pygame.Vector2:
+def force(cur_particle: particle.Particle, sel_particle: particle.Particle) -> pygame.Vector2:
     f = pygame.Vector2(0)
+    
     diff = cur_particle.position - sel_particle.position
 
     distance = diff.length()
@@ -82,7 +81,7 @@ def force(
         return pygame.Vector2(0)
 
     direction = diff.normalize()
-
+    
     f += repulsion(distance, direction)
     f += viscosity(cur_particle, sel_particle, distance)
 
@@ -93,7 +92,7 @@ def force(
 def repulsion(distance, direction) -> pygame.Vector2:
     repulsion_force = pygame.Vector2(0)
 
-    force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT * 2)) ** 2
+    force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT)) ** 2
 
     repulsion_force -= direction * force_magnitude
 
@@ -107,7 +106,7 @@ def viscosity(
     viscosity_force = pygame.Vector2(0)
 
     viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (
-        1 / ((distance) / (PARTICLE_PIXEL_RADIUS * 1.5))
+        1 / ((distance) / (PARTICLE_PIXEL_RADIUS))
     )
 
     return viscosity_force
@@ -137,9 +136,9 @@ def for_each_point_within_radius(particle):
                 particles[particle_index].position - particle.position
             ).magnitude_squared()
 
+            forces += GRAVITY
             if sqr_distance <= sqr_radius:
-                # forces += GRAVITY
-                forces += force(particle, particles[particle_index])
+                forces += force(particles[particle_index], particle)
 
         return forces
 
