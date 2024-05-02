@@ -12,7 +12,7 @@ from space import (
     update_spatial_lookup,
 )
 
-# import line_profiler
+import line_profiler
 # kernprof -l .\main.py
 # python.exe -m line_profiler .\main.py.lprof
 
@@ -20,7 +20,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 1000
+NUM_OF_PARTICLES = 3000
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 10  # Pixels
 PARTICLE_PIXEL_RADIUS = 2
@@ -69,7 +69,7 @@ def deltaTime() -> float:
     return delta_time
 
 
-# @line_profiler.profile
+
 def force(cur_particle: particle.Particle, sel_particle: particle.Particle) -> pygame.Vector2:
     f = pygame.Vector2(0)
     
@@ -88,7 +88,7 @@ def force(cur_particle: particle.Particle, sel_particle: particle.Particle) -> p
     return f
 
 
-# @line_profiler.profile
+
 def repulsion(distance, direction) -> pygame.Vector2:
     repulsion_force = pygame.Vector2(0)
 
@@ -99,7 +99,7 @@ def repulsion(distance, direction) -> pygame.Vector2:
     return repulsion_force
 
 
-# @line_profiler.profile
+
 def viscosity(
     cur_particle: particle.Particle, sel_particle: particle.Particle, distance
 ) -> pygame.Vector2:
@@ -113,6 +113,7 @@ def viscosity(
 
 
 ########
+
 
 
 def for_each_point_within_radius(particle):
@@ -136,7 +137,7 @@ def for_each_point_within_radius(particle):
                 particles[particle_index].position - particle.position
             ).magnitude_squared()
 
-            forces += GRAVITY
+            # forces += GRAVITY
             if sqr_distance <= sqr_radius:
                 forces += force(particles[particle_index], particle)
 
@@ -144,7 +145,7 @@ def for_each_point_within_radius(particle):
 
 
 ########
-# @line_profiler.profile
+
 def simulate(dt):
     WIN.fill((0, 0, 0))
     update_spatial_lookup(
@@ -162,7 +163,7 @@ def simulate(dt):
         particles[i].position += particles[i].velocity * dt
 
 
-# @line_profiler.profile
+
 def render():
     for p in particles:
         p.draw(WIN)
@@ -170,7 +171,7 @@ def render():
     pygame.display.flip()
 
 
-# @line_profiler.profile
+
 def setup():
     width, height = pygame.display.get_window_size()
 
@@ -222,7 +223,7 @@ def setup():
             forces.append(pygame.Vector2(0))
 
 
-# @line_profiler.profile
+
 def main():
     global particles, spatial_lookup, start_indices
     run = True
