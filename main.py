@@ -20,14 +20,13 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 3000
+NUM_OF_PARTICLES = 300
 DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 10  # Pixels
-PARTICLE_PIXEL_RADIUS = 2
-PARTICLE_METER_RADIUS = 0.1  # Meter
-FORCE_COEFFICIENT = PARTICLE_PIXEL_RADIUS / PARTICLE_METER_RADIUS
-REPULSION_COEFF = 1e8
-GRAVITY = pygame.Vector2(0, 9.81 * 1e4) / FORCE_COEFFICIENT
+NEAR_DISTANCE_REQUIRED = 15  # Pixels
+PARTICLE_PIXEL_RADIUS = 3.5
+REPULSION_COEFF = 1E3
+REPULSION_DROPOFF = 6E-2
+GRAVITY = pygame.Vector2(0, 9.81 * 1e4)
 GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
 
 # Colors
@@ -92,7 +91,7 @@ def force(cur_particle: particle.Particle, sel_particle: particle.Particle) -> p
 def repulsion(distance, direction) -> pygame.Vector2:
     repulsion_force = pygame.Vector2(0)
 
-    force_magnitude = REPULSION_COEFF / (distance * (FORCE_COEFFICIENT)) ** 2
+    force_magnitude = REPULSION_COEFF / ((distance) * REPULSION_DROPOFF) ** 2
 
     repulsion_force -= direction * force_magnitude
 
@@ -106,7 +105,7 @@ def viscosity(
     viscosity_force = pygame.Vector2(0)
 
     viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (
-        1 / ((distance) / (PARTICLE_PIXEL_RADIUS))
+        3 / (distance / PARTICLE_PIXEL_RADIUS)**2
     )
 
     return viscosity_force
@@ -117,7 +116,7 @@ def viscosity(
 
 
 def for_each_point_within_radius(particle):
-    radius = 10
+    radius = 15
     center_x, center_y = position_to_cell_coord(particle, radius)
     sqr_radius = radius**2
 
@@ -137,14 +136,12 @@ def for_each_point_within_radius(particle):
                 particles[particle_index].position - particle.position
             ).magnitude_squared()
 
-            # forces += GRAVITY
+            forces += GRAVITY
             if sqr_distance <= sqr_radius:
                 forces += force(particles[particle_index], particle)
 
         return forces
 
-
-########
 
 def simulate(dt):
     WIN.fill((0, 0, 0))
@@ -246,7 +243,7 @@ def main():
                 spatial_lookup = []
                 start_indices = []
                 setup()
-        dt = 0.0003
+        dt = 0.0001
         simulate(dt)
         if simcount % 10 == 0:
             render()
