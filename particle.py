@@ -34,16 +34,32 @@ class Particle:
         self.position.x = max(self.size, min(self.position.x, win_width - self.size))
         self.position.y = max(self.size, min(self.position.y, win_height - self.size))
 
-        color_1 = self.colorvalue(self.velocity.x, self.velocity.y)
+        if self.colorvalue(self.velocity.x, self.velocity.y) == 1000:
+            color_r = 255
+            color_g = 255
+            color_b = 255
+        elif self.colorvalue(self.velocity.x, self.velocity.y) > 255:
+            color_r = 255
+            color_g = 510 -self.colorvalue(self.velocity.x, self.velocity.y) 
+            color_b = 0
+        else:
+            color_r = self.colorvalue(self.velocity.x, self.velocity.y)
+            color_g = self.colorvalue(self.velocity.x, self.velocity.y)
+            if self.colorvalue(self.velocity.x, self.velocity.y) < 127.5:
+                color_b = 255 - self.colorvalue(self.velocity.x, self.velocity.y)*2
+            else:
+                color_b = 0
 
-        self.color = (color_1, 255 - self.colorvalue(self.velocity.x, self.velocity.y), 0)
+        self.color = (color_r, color_g, color_b)
 
         pygame.draw.circle(window, self.color, self.position.xy, self.size)
     
     def colorvalue(self, x, y):
-        a = 0.2 * (math.sqrt(x**2 + y**2))
-        if a > 255:
-            a = 255
-        elif a < 1:
-            a = 1
+        a = 0.3 * (math.sqrt(x**2 + y**2))
+        if a > 1000:
+            a = 1000
+        elif a > 510:
+            a = 510
+        elif a < 0:
+            a = 0
         return a
