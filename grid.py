@@ -1,6 +1,6 @@
 import particle
 import numpy as np
-import line_profiler
+# import line_profiler
 
 class Grid:
     def __init__(self, screen_width: int, screen_height: int, cell_size: int) -> None:
