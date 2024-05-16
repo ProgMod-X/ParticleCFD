@@ -13,7 +13,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 300
+NUM_OF_PARTICLES = 1000
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
@@ -125,8 +125,8 @@ def get_neighbours_3x3(particle):
                 
 def update_cell(particle):
     particle_x, particle_y = particle.position.xy
-    cell_x = math.floor(particle_x / GRID_CELL_SIZE)
-    cell_y = math.floor(particle_y / GRID_CELL_SIZE)
+    cell_x = int(particle_x // GRID_CELL_SIZE)
+    cell_y = int(particle_y // GRID_CELL_SIZE)
     particle.cell = (cell_x, cell_y)
                 
 def simulate(dt):
@@ -147,7 +147,6 @@ def simulate(dt):
                     f += force(iter_particle, particle)
                 forces[particle] = f
 
-                
                 particle.velocity += forces[particle] * dt
                 particle.position += particle.velocity * dt
 
@@ -164,7 +163,11 @@ def render():
 
 
 def setup():
+    global GRID_ROWS, GRID_COLS, new_particles
     width, height = pygame.display.get_window_size()
+
+    GRID_ROWS = math.ceil(height / GRID_CELL_SIZE)
+    GRID_COLS = math.ceil(width / GRID_CELL_SIZE)
 
     grid_rows = int(np.sqrt(NUM_OF_PARTICLES))
     grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
@@ -198,8 +201,8 @@ def setup():
                 start_y + j * (PARTICLE_PIXEL_RADIUS + gap_y) + random.uniform(-10, 10)
             )  # Add random offset
             
-            cell_x = math.floor(pos.x / GRID_CELL_SIZE)
-            cell_y = math.floor(pos.y / GRID_CELL_SIZE)
+            cell_x = int(pos.x // GRID_CELL_SIZE)
+            cell_y = int(pos.y // GRID_CELL_SIZE)
             
             p = particle.Particle(
                 pos,
