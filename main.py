@@ -1,16 +1,9 @@
 import pygame
 import numpy as np
 import particle
-import grid
 import time
 import random
 import math
-from space import (
-    get_key_from_hash,
-    hash_cell,
-    position_to_cell_coord,
-    update_spatial_lookup,
-)
 
 import line_profiler
 # kernprof -l .\main.py
@@ -22,12 +15,15 @@ WIDTH, HEIGHT = 400, 400
 FPS = 1000
 NUM_OF_PARTICLES = 300
 DAMPENING_EFFECT = 0.75
-NEAR_DISTANCE_REQUIRED = 15  # Pixels
+NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
 REPULSION_COEFF = 1E3
 REPULSION_DROPOFF = 6E-2
 GRAVITY = pygame.Vector2(0, 9.81 * 1e4)
-GRID_CELL_SIZE = 2 * NEAR_DISTANCE_REQUIRED
+
+GRID_CELL_SIZE = NEAR_DISTANCE_REQUIRED
+GRID_ROWS = math.ceil(HEIGHT / GRID_CELL_SIZE)
+GRID_COLS = math.ceil(WIDTH / GRID_CELL_SIZE)
 
 # Colors
 GREEN = (0, 255, 0)
@@ -47,11 +43,18 @@ OFFSETS2D = [
     (1, -1),
 ]
 
-forces = []
-start_indices = []
-spatial_lookup = []
-particles = []
+forces = {}
 
+def create_particle_grid():
+    grid = []
+    for x in range(GRID_ROWS):
+        a = []
+        for y in range(GRID_COLS):
+            a.append([])
+        grid.append(a)
+    return grid
+
+new_particles = create_particle_grid()
 
 def deltaTime() -> float:
     # Get the current time in seconds
@@ -69,10 +72,10 @@ def deltaTime() -> float:
 
 
 
-def force(cur_particle: particle.Particle, sel_particle: particle.Particle) -> pygame.Vector2:
+def force(iter_particle: particle.Particle, particle: particle.Particle) -> pygame.Vector2:
     f = pygame.Vector2(0)
     
-    diff = cur_particle.position - sel_particle.position
+    diff = iter_particle.position - particle.position
 
     distance = diff.length()
 
@@ -82,7 +85,7 @@ def force(cur_particle: particle.Particle, sel_particle: particle.Particle) -> p
     direction = diff.normalize()
     
     f += repulsion(distance, direction)
-    f += viscosity(cur_particle, sel_particle, distance)
+    f += viscosity(iter_particle, particle, distance)
 
     return f
 
@@ -100,70 +103,61 @@ def repulsion(distance, direction) -> pygame.Vector2:
 
 
 def viscosity(
-    cur_particle: particle.Particle, sel_particle: particle.Particle, distance
+    iter_particle: particle.Particle, particle: particle.Particle, distance
 ) -> pygame.Vector2:
     viscosity_force = pygame.Vector2(0)
 
-    viscosity_force = (cur_particle.velocity - sel_particle.velocity) * (
+    viscosity_force = (iter_particle.velocity - particle.velocity) * (
         3 / (distance / PARTICLE_PIXEL_RADIUS)**2
     )
 
     return viscosity_force
 
-
-########
-
-
-
-def for_each_point_within_radius(particle):
-    radius = 15
-    center_x, center_y = position_to_cell_coord(particle, radius)
-    sqr_radius = radius**2
-
-    for offset_x, offset_y in OFFSETS2D:
-        key = get_key_from_hash(
-            hash_cell(center_x + offset_x, center_y + offset_y), spatial_lookup
-        )
-        cell_start_index = start_indices[key]
-        forces = pygame.Vector2(0)
-
-        for i in range(cell_start_index, len(spatial_lookup)):
-            if spatial_lookup[i].cell_key != key:
-                break
-
-            particle_index = spatial_lookup[i].particle_index
-            sqr_distance = (
-                particles[particle_index].position - particle.position
-            ).magnitude_squared()
-
-            forces += GRAVITY
-            if sqr_distance <= sqr_radius:
-                forces += force(particles[particle_index], particle)
-
-        return forces
-
-
+def get_neighbours_3x3(particle):
+    cell_x, cell_y = particle.cell
+    neighbours = []
+    for offset in OFFSETS2D:
+        try:
+            neighbours.extend(new_particles[cell_x + offset[0]][cell_y + offset[1]])
+        except:
+            continue
+    return neighbours
+                
+def update_cell(particle):
+    particle_x, particle_y = particle.position.xy
+    cell_x = math.floor(particle_x / GRID_CELL_SIZE)
+    cell_y = math.floor(particle_y / GRID_CELL_SIZE)
+    particle.cell = (cell_x, cell_y)
+                
 def simulate(dt):
     WIN.fill((0, 0, 0))
-    update_spatial_lookup(
-        particles, NEAR_DISTANCE_REQUIRED, spatial_lookup, start_indices
-    )
 
-    for i in range(len(particles)):
-        # forces[i] = force(particles[i])
-        forces[i] = for_each_point_within_radius(particles[i])
-        # if forces[i].x != 0 or forces[i].y != 0:
-        # print(forces[i], i, particles[i])
+    for x in range(GRID_ROWS):
+        for y in range(GRID_COLS):
+            for particle in new_particles[x][y]:
+                
+                update_cell(particle)   
+    
+    for x in range(GRID_ROWS):
+        for y in range(GRID_COLS):
+            for particle in new_particles[x][y]:
+                neighbours = get_neighbours_3x3(particle)
+                f = pygame.Vector2(0)
+                for iter_particle in neighbours:
+                    f += force(iter_particle, particle)
+                forces[particle] = f
 
-    for i in range(len(particles)):
-        particles[i].velocity += forces[i] * dt
-        particles[i].position += particles[i].velocity * dt
+                
+                particle.velocity += forces[particle] * dt
+                particle.position += particle.velocity * dt
 
 
 
 def render():
-    for p in particles:
-        p.draw(WIN)
+    for x in range(GRID_ROWS):
+        for y in range(GRID_COLS):
+            for p in new_particles[x][y]:
+                p.draw(WIN)
 
     pygame.display.flip()
 
@@ -203,26 +197,24 @@ def setup():
             pos.y = (
                 start_y + j * (PARTICLE_PIXEL_RADIUS + gap_y) + random.uniform(-10, 10)
             )  # Add random offset
+            
+            cell_x = math.floor(pos.x / GRID_CELL_SIZE)
+            cell_y = math.floor(pos.y / GRID_CELL_SIZE)
+            
             p = particle.Particle(
                 pos,
                 pygame.Vector2(0),
                 GREEN,
                 PARTICLE_PIXEL_RADIUS,
                 DAMPENING_EFFECT,
-                (
-                    math.floor(pos.x / GRID_CELL_SIZE),
-                    math.floor(pos.y / GRID_CELL_SIZE),
-                ),
+                (cell_x, cell_y),
             )
-            particles.append(p)
-            spatial_lookup.append(987654321)
-            start_indices.append(987654321)
-            forces.append(pygame.Vector2(0))
+            new_particles[cell_x][cell_y].append(p)
 
 
 
 def main():
-    global particles, spatial_lookup, start_indices
+    global new_particles
     run = True
     simcount = 0
 
@@ -239,11 +231,9 @@ def main():
                     run = False
                     pygame.quit()
             elif event.type == pygame.VIDEORESIZE:
-                particles = []
-                spatial_lookup = []
-                start_indices = []
+                new_particles = create_particle_grid()
                 setup()
-        dt = 0.0001
+        dt = 0.0003
         simulate(dt)
         if simcount % 10 == 0:
             render()
