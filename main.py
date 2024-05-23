@@ -13,7 +13,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 750
+NUM_OF_PARTICLES = 500
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
@@ -48,9 +48,9 @@ forces = {}
 
 def create_particle_grid():
     grid = []
-    for x in range(GRID_ROWS):
+    for x in range(GRID_ROWS + 1):
         a = []
-        for y in range(GRID_COLS):
+        for y in range(GRID_COLS + 1):
             a.append([])
         grid.append(a)
     return grid
@@ -145,6 +145,7 @@ def simulate(dt):
             for particle in new_particles[x][y]:
                 neighbours = get_neighbours_3x3(particle)
                 f = pygame.Vector2(0)
+                f += GRAVITY
                 for iter_particle in neighbours:
                     f += force(iter_particle, particle)
                 forces[particle] = f
