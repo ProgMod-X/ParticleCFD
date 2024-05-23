@@ -13,7 +13,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 500
+NUM_OF_PARTICLES = 300
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
@@ -127,6 +127,11 @@ def update_cell(particle):
     particle_x, particle_y = particle.position.xy
     cell_x = int(particle_x // GRID_CELL_SIZE)
     cell_y = int(particle_y // GRID_CELL_SIZE)
+    
+    # Ensure cell coordinates are within the range of the grid
+    cell_x = max(0, min(cell_x, GRID_ROWS - 1))
+    cell_y = max(0, min(cell_y, GRID_COLS - 1))
+    
     particle.cell = (cell_x, cell_y)
                 
 def simulate(dt):
@@ -210,7 +215,7 @@ def setup():
                 pos,
                 pygame.Vector2(0),
                 GREEN,
-                PARTICLE_PIXEL_RADIUS,
+                3 + random.random() * 2,
                 DAMPENING_EFFECT,
                 (cell_x, cell_y),
             )

@@ -55,7 +55,7 @@ class Particle:
         pygame.draw.circle(window, self.color, self.position.xy, self.size)
     
     def colorvalue(self, x, y):
-        a = 0.3 * (math.sqrt(x**2 + y**2))
+        a = 0.5 * (math.sqrt(x**2 + y**2))
         if a > 1000:
             a = 1000
         elif a > 510:
