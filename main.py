@@ -13,7 +13,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
-NUM_OF_PARTICLES = 1000
+NUM_OF_PARTICLES = 750
 DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
@@ -27,6 +27,7 @@ GRID_COLS = math.ceil(WIDTH / GRID_CELL_SIZE)
 
 # Colors
 GREEN = (0, 255, 0)
+
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
@@ -135,9 +136,10 @@ def simulate(dt):
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
             for particle in new_particles[x][y]:
-                
-                update_cell(particle)   
-    
+                new_particles[x][y].remove(particle)
+                update_cell(particle)
+                new_particles[particle.cell[0]][particle.cell[1]].append(particle)
+
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
             for particle in new_particles[x][y]:
