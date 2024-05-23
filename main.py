@@ -18,7 +18,7 @@ NUM_OF_PARTICLES = 500
 NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
 
-DAMPENING_EFFECT = 0.75
+DAMPENING_EFFECT = 0.9
 
 REPULSION_COEFF = 3E3 # Higher value means stronger repulsion
 REPULSION_DROPOFF = 6E-2 # Higher value means faster dropoff and less repulsion
@@ -26,6 +26,7 @@ MOUSE_REPULSION_COEFF = 1E3
 MOUSE_REPULSION_DROPOFF = 1E-2
 MOUSE_ATTRACTION_COEFF = 5E4
 MOUSE_ATTRACTION_DROPOFF = 7E-2 
+VISCOSITY_CONST = 6
 
 GRAVITY = pygame.Vector2(0, 9.81 * 1E3)
 
@@ -146,7 +147,7 @@ def viscosity(
     viscosity_force = pygame.Vector2(0)
 
     viscosity_force = (iter_particle.velocity - particle.velocity) * (
-        3 / (distance / PARTICLE_PIXEL_RADIUS)**2
+        1 / ((distance / PARTICLE_PIXEL_RADIUS)* 1/VISCOSITY_CONST)**2
     )
 
     return viscosity_force
