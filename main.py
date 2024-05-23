@@ -13,12 +13,20 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
+
 NUM_OF_PARTICLES = 500
-DAMPENING_EFFECT = 0.75
 NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
-REPULSION_COEFF = 1E3
-REPULSION_DROPOFF = 6E-2
+
+DAMPENING_EFFECT = 0.75
+
+REPULSION_COEFF = 3E3 # Higher value means stronger repulsion
+REPULSION_DROPOFF = 6E-2 # Higher value means faster dropoff and less repulsion
+MOUSE_REPULSION_COEFF = 1E3
+MOUSE_REPULSION_DROPOFF = 1E-2
+MOUSE_ATTRACTION_COEFF = 5E4
+MOUSE_ATTRACTION_DROPOFF = 7E-2 
+
 GRAVITY = pygame.Vector2(0, 9.81 * 1E3)
 
 GRID_CELL_SIZE = NEAR_DISTANCE_REQUIRED
@@ -101,7 +109,36 @@ def repulsion(distance, direction) -> pygame.Vector2:
 
     return repulsion_force
 
+def mouse_force(particle: particle.Particle) -> pygame.Vector2:
+    mouse_pos = pygame.mouse.get_pos()  
+    left_click, middle_click, right_click = pygame.mouse.get_pressed()
 
+    if left_click:  # Left click: Repulsion
+        diff = pygame.Vector2(mouse_pos) - particle.position
+        distance = diff.length()
+        direction = diff.normalize()
+        
+        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED:
+            return pygame.Vector2(0)
+        
+        force_magnitude = MOUSE_REPULSION_COEFF / ((distance) * MOUSE_REPULSION_DROPOFF) ** 2
+        repulsion_force = -direction * force_magnitude  
+        return repulsion_force
+
+    elif right_click:  # Right click: Attraction
+        diff = pygame.Vector2(mouse_pos) - particle.position
+        distance = diff.length()
+        direction = diff.normalize()
+
+        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED:
+            return pygame.Vector2(0)
+ 
+        force_magnitude = MOUSE_ATTRACTION_COEFF / ((distance) * MOUSE_ATTRACTION_DROPOFF) ** 2
+        attraction_force = direction * force_magnitude
+        return attraction_force
+    
+    else:  # No click: No force
+        return pygame.Vector2(0)
 
 def viscosity(
     iter_particle: particle.Particle, particle: particle.Particle, distance
@@ -146,6 +183,7 @@ def simulate(dt):
                 neighbours = get_neighbours_3x3(particle)
                 f = pygame.Vector2(0)
                 f += GRAVITY
+                f += mouse_force(particle)
                 for iter_particle in neighbours:
                     f += force(iter_particle, particle)
                 forces[particle] = f
