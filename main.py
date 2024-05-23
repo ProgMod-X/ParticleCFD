@@ -79,7 +79,7 @@ def force(iter_particle: particle.Particle, particle: particle.Particle) -> pyga
 
     distance = diff.length()
 
-    if distance == 0:
+    if distance == 0 or distance > NEAR_DISTANCE_REQUIRED:
         return pygame.Vector2(0)
 
     direction = diff.normalize()
