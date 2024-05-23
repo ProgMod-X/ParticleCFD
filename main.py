@@ -89,7 +89,7 @@ def force(iter_particle: particle.Particle, particle: particle.Particle) -> pyga
     distance = diff.length()
 
     if distance == 0 or distance > NEAR_DISTANCE_REQUIRED:
-        return pygame.Vector2(0)
+        return f
 
     direction = diff.normalize()
     
@@ -155,16 +155,20 @@ def get_neighbours_3x3(particle):
     cell_x, cell_y = particle.cell
     neighbours = []
     for offset in OFFSETS2D:
-        try:
-            neighbours.extend(new_particles[cell_x + offset[0]][cell_y + offset[1]])
-        except:
-            continue
+        new_x, new_y = cell_x + offset[0], cell_y + offset[1]
+        if 0 <= new_x < GRID_ROWS and 0 <= new_y < GRID_COLS:
+            neighbours.extend(new_particles[new_x][new_y])
     return neighbours
                 
 def update_cell(particle):
     particle_x, particle_y = particle.position.xy
     cell_x = int(particle_x // GRID_CELL_SIZE)
     cell_y = int(particle_y // GRID_CELL_SIZE)
+    
+    # Ensure cell coordinates are within the range of the grid
+    cell_x = max(0, min(cell_x, GRID_ROWS - 1))
+    cell_y = max(0, min(cell_y, GRID_COLS - 1))
+    
     particle.cell = (cell_x, cell_y)
                 
 def simulate(dt):
@@ -249,7 +253,7 @@ def setup():
                 pos,
                 pygame.Vector2(0),
                 GREEN,
-                PARTICLE_PIXEL_RADIUS,
+                3 + random.random() * 2,
                 DAMPENING_EFFECT,
                 (cell_x, cell_y),
             )
