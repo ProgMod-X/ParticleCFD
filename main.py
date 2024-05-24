@@ -134,7 +134,7 @@ def mouse_force(particle: particle.Particle) -> pygame.Vector2:
         if distance == 0 or distance > NEAR_DISTANCE_REQUIRED*3:
             return pygame.Vector2(0)
  
-        force_magnitude = (math.e * distance) / (math.exp(distance)) * 1E1
+        force_magnitude = (math.e * distance) / (math.exp(distance/PARTICLE_PIXEL_RADIUS)) * 1E5
         attraction_force = direction * force_magnitude
         return attraction_force
     
