@@ -14,7 +14,7 @@ pygame.init()
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
 
-NUM_OF_PARTICLES = 500
+NUM_OF_PARTICLES = 300
 NEAR_DISTANCE_REQUIRED = 20  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
 
@@ -118,7 +118,7 @@ def mouse_force(particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
         direction = diff.normalize()
         
-        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED:
+        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED*3:
             return pygame.Vector2(0)
         
         force_magnitude = MOUSE_REPULSION_COEFF / ((distance) * MOUSE_REPULSION_DROPOFF) ** 2
@@ -130,10 +130,10 @@ def mouse_force(particle: particle.Particle) -> pygame.Vector2:
         distance = diff.length()
         direction = diff.normalize()
 
-        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED:
+        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED*3:
             return pygame.Vector2(0)
  
-        force_magnitude = MOUSE_ATTRACTION_COEFF / ((distance) * MOUSE_ATTRACTION_DROPOFF) ** 2
+        force_magnitude = (math.e * distance) / (math.exp(distance)) * 1E1
         attraction_force = direction * force_magnitude
         return attraction_force
     
@@ -146,7 +146,7 @@ def viscosity(
     viscosity_force = pygame.Vector2(0)
 
     viscosity_force = (iter_particle.velocity - particle.velocity) * (
-        3 / (distance / PARTICLE_PIXEL_RADIUS)**2
+        1 / (distance / PARTICLE_PIXEL_RADIUS * 2)**2
     )
 
     return viscosity_force
