@@ -1,57 +1,40 @@
-import particle
-import numpy as np
-# import line_profiler
+def get_neighbours_3x3(particle, GRID_ROWS, GRID_COLS, particles):
+    OFFSETS2D = [
+        (0, 0),
+        (1, 0),
+        (-1, 0),
+        (0, 1),
+        (0, -1),
+        (1, 1),
+        (-1, -1),
+        (-1, 1),
+        (1, -1),
+    ]
 
-class Grid:
-    def __init__(self, screen_width: int, screen_height: int, cell_size: int) -> None:
-        self.width = screen_width
-        self.height = screen_height
-        self.size = cell_size
-        self.cells = np.empty((int(np.ceil(screen_width / cell_size)), int(np.ceil(screen_height / cell_size))), dtype=object)
+    cell_x, cell_y = particle.cell
+    neighbours = []
+    for offset in OFFSETS2D:
+        new_x, new_y = cell_x + offset[0], cell_y + offset[1]
+        if 0 <= new_x < GRID_ROWS and 0 <= new_y < GRID_COLS:
+            neighbours.extend(particles[new_x][new_y])
+    return neighbours
+                
+def update_cell(particle, GRID_ROWS, GRID_COLS, GRID_CELL_SIZE):
+    particle_x, particle_y = particle.position.xy
+    cell_x = int(particle_x // GRID_CELL_SIZE)
+    cell_y = int(particle_y // GRID_CELL_SIZE)
+    
+    # Ensure cell coordinates are within the range of the grid
+    cell_x = max(0, min(cell_x, GRID_ROWS - 1))
+    cell_y = max(0, min(cell_y, GRID_COLS - 1))
+    
+    particle.cell = (cell_x, cell_y)
 
-    # @line_profiler.profile
-    def add_particle(self, particle: particle.Particle) -> None:
-        col_idx = int(np.floor(particle.position.x / self.size))
-        row_idx = int(np.floor(particle.position.y / self.size))
-
-        if self.cells[col_idx, row_idx] is None:
-            self.cells[col_idx, row_idx] = [particle]
-        else:
-            self.cells[col_idx, row_idx].append(particle)
-
-        particle.grid_cell = (col_idx, row_idx)
-
-    # @line_profiler.profile
-    def remove_particle(self, particle: particle.Particle) -> None:
-        col_idx, row_idx = particle.grid_cell
-        cell = self.cells[col_idx, row_idx]
-
-        if cell:  # Check if cell is not empty
-            cell.remove(particle)
-            if not cell:
-                self.cells[col_idx, row_idx] = None
-
-    # @line_profiler.profile
-    def get_neighbours(self, particle: particle.Particle) -> list[particle.Particle]:
-        col_idx, row_idx = particle.grid_cell
-        neighbours = []
-        search_range = 1  # Look for neighbors within a 1-cell radius
-
-        grid_bound_x, grid_bound_y = self.cells.shape
-
-        for i in range(max(0, col_idx - search_range), min(col_idx + search_range + 1, grid_bound_x)):
-            for j in range(max(0, row_idx - search_range), min(row_idx + search_range + 1, grid_bound_y)):
-                cell = self.cells[i, j]
-                if cell is not None:
-                    neighbours.extend(cell)
-        if particle in neighbours:
-            neighbours.remove(particle)  # Exclude the particle itself
-        return neighbours
-
-    # @line_profiler.profile
-    def get_all_particles(self) -> list[particle.Particle]:
-        all_particles = []
-        for cell in self.cells.flat:
-            if cell is not None:
-                all_particles.extend(cell)
-        return all_particles
+def create_particle_grid(GRID_ROWS, GRID_COLS):
+    grid = []
+    for x in range(GRID_ROWS + 1):
+        a = []
+        for y in range(GRID_COLS + 1):
+            a.append([])
+        grid.append(a)
+    return grid

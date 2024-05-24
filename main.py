@@ -5,6 +5,9 @@ import time
 import random
 import math
 
+from forces import calculate_forces, mouse_force
+from grid import get_neighbours_3x3, update_cell, create_particle_grid
+
 import line_profiler
 # kernprof -l .\main.py
 # python.exe -m line_profiler .\main.py.lprof
@@ -37,34 +40,12 @@ GRID_COLS = math.ceil(WIDTH / GRID_CELL_SIZE)
 # Colors
 GREEN = (0, 255, 0)
 
-
 WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SCALED)
 pygame.display.set_caption("PCFD")
 
-OFFSETS2D = [
-    (0, 0),
-    (1, 0),
-    (-1, 0),
-    (0, 1),
-    (0, -1),
-    (1, 1),
-    (-1, -1),
-    (-1, 1),
-    (1, -1),
-]
-
 forces = {}
 
-def create_particle_grid():
-    grid = []
-    for x in range(GRID_ROWS + 1):
-        a = []
-        for y in range(GRID_COLS + 1):
-            a.append([])
-        grid.append(a)
-    return grid
-
-new_particles = create_particle_grid()
+particles = create_particle_grid(GRID_ROWS, GRID_COLS)
 
 def deltaTime() -> float:
     # Get the current time in seconds
@@ -81,116 +62,26 @@ def deltaTime() -> float:
     return delta_time
 
 
-
-def force(iter_particle: particle.Particle, particle: particle.Particle) -> pygame.Vector2:
-    f = pygame.Vector2(0)
-    
-    diff = iter_particle.position - particle.position
-
-    distance = diff.length()
-
-    if distance == 0 or distance > NEAR_DISTANCE_REQUIRED:
-        return f
-
-    direction = diff.normalize()
-    
-    f += repulsion(distance, direction)
-    f += viscosity(iter_particle, particle, distance)
-
-    return f
-
-
-
-def repulsion(distance, direction) -> pygame.Vector2:
-    repulsion_force = pygame.Vector2(0)
-
-    force_magnitude = REPULSION_COEFF / ((distance) * REPULSION_DROPOFF) ** 2
-
-    repulsion_force -= direction * force_magnitude
-
-    return repulsion_force
-
-def mouse_force(particle: particle.Particle) -> pygame.Vector2:
-    mouse_pos = pygame.mouse.get_pos()  
-    left_click, middle_click, right_click = pygame.mouse.get_pressed()
-
-    if left_click:  # Left click: Repulsion
-        diff = pygame.Vector2(mouse_pos) - particle.position
-        distance = diff.length()
-        direction = diff.normalize()
-        
-        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED*3:
-            return pygame.Vector2(0)
-        
-        force_magnitude = MOUSE_REPULSION_COEFF / ((distance) * MOUSE_REPULSION_DROPOFF) ** 2
-        repulsion_force = -direction * force_magnitude  
-        return repulsion_force
-
-    elif right_click:  # Right click: Attraction
-        diff = pygame.Vector2(mouse_pos) - particle.position
-        distance = diff.length()
-        direction = diff.normalize()
-
-        if distance == 0 or distance > NEAR_DISTANCE_REQUIRED*3:
-            return pygame.Vector2(0)
- 
-        force_magnitude = (math.e * distance) / (math.exp(distance/PARTICLE_PIXEL_RADIUS)) * 1E5
-        attraction_force = direction * force_magnitude
-        return attraction_force
-    
-    else:  # No click: No force
-        return pygame.Vector2(0)
-
-def viscosity(
-    iter_particle: particle.Particle, particle: particle.Particle, distance
-) -> pygame.Vector2:
-    viscosity_force = pygame.Vector2(0)
-
-    viscosity_force = (iter_particle.velocity - particle.velocity) * (
-        1 / ((distance / PARTICLE_PIXEL_RADIUS)* 1/VISCOSITY_CONST)**2
-    )
-
-    return viscosity_force
-
-def get_neighbours_3x3(particle):
-    cell_x, cell_y = particle.cell
-    neighbours = []
-    for offset in OFFSETS2D:
-        new_x, new_y = cell_x + offset[0], cell_y + offset[1]
-        if 0 <= new_x < GRID_ROWS and 0 <= new_y < GRID_COLS:
-            neighbours.extend(new_particles[new_x][new_y])
-    return neighbours
-                
-def update_cell(particle):
-    particle_x, particle_y = particle.position.xy
-    cell_x = int(particle_x // GRID_CELL_SIZE)
-    cell_y = int(particle_y // GRID_CELL_SIZE)
-    
-    # Ensure cell coordinates are within the range of the grid
-    cell_x = max(0, min(cell_x, GRID_ROWS - 1))
-    cell_y = max(0, min(cell_y, GRID_COLS - 1))
-    
-    particle.cell = (cell_x, cell_y)
                 
 def simulate(dt):
     WIN.fill((0, 0, 0))
 
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
-            for particle in new_particles[x][y]:
-                new_particles[x][y].remove(particle)
-                update_cell(particle)
-                new_particles[particle.cell[0]][particle.cell[1]].append(particle)
+            for particle in particles[x][y]:
+                particles[x][y].remove(particle)
+                update_cell(particle, GRID_ROWS, GRID_COLS, GRID_CELL_SIZE)
+                particles[particle.cell[0]][particle.cell[1]].append(particle)
 
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
-            for particle in new_particles[x][y]:
-                neighbours = get_neighbours_3x3(particle)
+            for particle in particles[x][y]:
+                neighbours = get_neighbours_3x3(particle, GRID_ROWS, GRID_COLS, particles)
                 f = pygame.Vector2(0)
                 f += GRAVITY
-                f += mouse_force(particle)
+                f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
                 for iter_particle in neighbours:
-                    f += force(iter_particle, particle)
+                    f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
                 forces[particle] = f
 
                 particle.velocity += forces[particle] * dt
@@ -201,15 +92,14 @@ def simulate(dt):
 def render():
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
-            for p in new_particles[x][y]:
+            for p in particles[x][y]:
                 p.draw(WIN)
 
     pygame.display.flip()
 
 
-
 def setup():
-    global GRID_ROWS, GRID_COLS, new_particles
+    global GRID_ROWS, GRID_COLS, particles
     width, height = pygame.display.get_window_size()
 
     GRID_ROWS = math.ceil(height / GRID_CELL_SIZE)
@@ -258,12 +148,12 @@ def setup():
                 DAMPENING_EFFECT,
                 (cell_x, cell_y),
             )
-            new_particles[cell_x][cell_y].append(p)
+            particles[cell_x][cell_y].append(p)
 
 
 
 def main():
-    global new_particles
+    global particles
     run = True
     simcount = 0
 
@@ -280,7 +170,7 @@ def main():
                     run = False
                     pygame.quit()
             elif event.type == pygame.VIDEORESIZE:
-                new_particles = create_particle_grid()
+                particles = create_particle_grid(GRID_ROWS, GRID_COLS)
                 setup()
         dt = 0.0003
         simulate(dt)
