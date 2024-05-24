@@ -34,19 +34,21 @@ class Particle:
         self.position.x = max(self.size, min(self.position.x, win_width - self.size))
         self.position.y = max(self.size, min(self.position.y, win_height - self.size))
 
-        if self.colorvalue(self.velocity.x, self.velocity.y) == 1000:
+        color_value = self.colorvalue(self.velocity.x, self.velocity.y)
+
+        if color_value == 1000:
             color_r = 255
             color_g = 255
             color_b = 255
-        elif self.colorvalue(self.velocity.x, self.velocity.y) > 255:
+        elif color_value > 255:
             color_r = 255
             color_g = 510 -self.colorvalue(self.velocity.x, self.velocity.y) 
             color_b = 0
         else:
-            color_r = self.colorvalue(self.velocity.x, self.velocity.y)
-            color_g = self.colorvalue(self.velocity.x, self.velocity.y)
-            if self.colorvalue(self.velocity.x, self.velocity.y) < 127.5:
-                color_b = 255 - self.colorvalue(self.velocity.x, self.velocity.y)*2
+            color_r = color_value
+            color_g = color_value
+            if color_value < 127.5:
+                color_b = 255 - color_value*2
             else:
                 color_b = 0
 
