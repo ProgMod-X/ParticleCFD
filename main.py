@@ -3,7 +3,6 @@ import numpy as np
 import particle
 import time
 import random
-import math
 
 from forces import calculate_forces, mouse_force
 from grid import get_neighbours_3x3, update_cell, create_particle_grid
@@ -31,11 +30,11 @@ MOUSE_ATTRACTION_COEFF = 5E4
 MOUSE_ATTRACTION_DROPOFF = 7E-2 
 VISCOSITY_CONST = 6
 
-GRAVITY = pygame.Vector2(0, 9.81 * 1E3)
+GRAVITY = np.array([0, 9.81 * 1E3])
 
 GRID_CELL_SIZE = NEAR_DISTANCE_REQUIRED
-GRID_ROWS = math.ceil(HEIGHT / GRID_CELL_SIZE)
-GRID_COLS = math.ceil(WIDTH / GRID_CELL_SIZE)
+GRID_ROWS = np.ceil(HEIGHT / GRID_CELL_SIZE).astype(int)
+GRID_COLS = np.ceil(WIDTH / GRID_CELL_SIZE).astype(int)
 
 # Colors
 GREEN = (0, 255, 0)
@@ -77,7 +76,7 @@ def simulate(dt):
         for y in range(GRID_COLS):
             for particle in particles[x][y]:
                 neighbours = get_neighbours_3x3(particle, GRID_ROWS, GRID_COLS, particles)
-                f = pygame.Vector2(0)
+                f = np.array([0.0, 0.0])
                 f += GRAVITY
                 f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
                 for iter_particle in neighbours:
@@ -102,10 +101,10 @@ def setup():
     global GRID_ROWS, GRID_COLS, particles
     width, height = pygame.display.get_window_size()
 
-    GRID_ROWS = math.ceil(height / GRID_CELL_SIZE)
-    GRID_COLS = math.ceil(width / GRID_CELL_SIZE)
+    GRID_ROWS = np.ceil(height / GRID_CELL_SIZE).astype(int)
+    GRID_COLS = np.ceil(width / GRID_CELL_SIZE).astype(int)
 
-    grid_rows = int(np.sqrt(NUM_OF_PARTICLES))
+    grid_rows = np.sqrt(NUM_OF_PARTICLES).astype(int)
     grid_cols = (NUM_OF_PARTICLES + grid_rows - 1) // grid_rows
     grid_gap = PARTICLE_PIXEL_RADIUS * 1.5
 
@@ -129,20 +128,16 @@ def setup():
     # Place particles in the grid with random offsets
     for i in range(grid_rows):
         for j in range(grid_cols):
-            pos = pygame.Vector2()
-            pos.x = (
-                start_x + i * (PARTICLE_PIXEL_RADIUS + gap_x) + random.uniform(-10, 10)
-            )  # Add random offset
-            pos.y = (
-                start_y + j * (PARTICLE_PIXEL_RADIUS + gap_y) + random.uniform(-10, 10)
-            )  # Add random offset
+            pos = np.array([0.0, 0.0])
+            pos[0] = (start_x + i * (PARTICLE_PIXEL_RADIUS + gap_x) + random.uniform(-10, 10))  # Add random offset
+            pos[1] = (start_y + j * (PARTICLE_PIXEL_RADIUS + gap_y) + random.uniform(-10, 10))  # Add random offset
             
-            cell_x = int(pos.x // GRID_CELL_SIZE)
-            cell_y = int(pos.y // GRID_CELL_SIZE)
+            cell_x = int(pos[0] // GRID_CELL_SIZE)
+            cell_y = int(pos[1] // GRID_CELL_SIZE)
             
             p = particle.Particle(
                 pos,
-                pygame.Vector2(0),
+                np.array([0.0, 0.0]),
                 GREEN,
                 3 + random.random() * 2,
                 DAMPENING_EFFECT,

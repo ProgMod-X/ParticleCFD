@@ -1,12 +1,11 @@
 import pygame
 import numpy as np
-import math
 
 class Particle:
     def __init__(
         self,
-        posistion: pygame.Vector2,
-        velocity: pygame.Vector2,
+        posistion,
+        velocity,
         color: tuple,
         size: int,
         dampening_effect: float,
@@ -23,26 +22,26 @@ class Particle:
         win_width, win_height = window.get_size()
 
         # Check if particle touches left or right boundary
-        if self.position.x - self.size <= 0 or self.position.x + self.size >= win_width:
-            self.velocity.x *= self.dampening_effect
+        if self.position[0] - self.size <= 0 or self.position[0] + self.size >= win_width:
+            self.velocity[0] *= self.dampening_effect
 
         # Check if particle touches top or bottom boundary
-        if self.position.y - self.size <= 0 or self.position.y + self.size >= win_height:
-            self.velocity.y *= self.dampening_effect
+        if self.position[1] - self.size <= 0 or self.position[1] + self.size >= win_height:
+            self.velocity[1] *= self.dampening_effect
 
         # Make sure the particles are inside the bounding box, which is set to the window size.
-        self.position.x = max(self.size, min(self.position.x, win_width - self.size))
-        self.position.y = max(self.size, min(self.position.y, win_height - self.size))
+        self.position[0] = max(self.size, min(self.position[0], win_width - self.size))
+        self.position[1] = max(self.size, min(self.position[1], win_height - self.size))
 
-        color_value = self.colorvalue(self.velocity.x, self.velocity.y)
+        color_value = self.colorvalue(self.velocity[0], self.velocity[1])
 
         if color_value == 1000:
             color_r = 255
-            color_g = 255
+            color_g = 25
             color_b = 255
         elif color_value > 255:
             color_r = 255
-            color_g = 510 -self.colorvalue(self.velocity.x, self.velocity.y) 
+            color_g = 510 -self.colorvalue(self.velocity[0], self.velocity[1]) 
             color_b = 0
         else:
             color_r = color_value
@@ -54,10 +53,10 @@ class Particle:
 
         self.color = (color_r, color_g, color_b)
 
-        pygame.draw.circle(window, self.color, self.position.xy, self.size)
+        pygame.draw.circle(window, self.color, self.position, self.size)
     
     def colorvalue(self, x, y):
-        a = 0.5 * (math.sqrt(x**2 + y**2))
+        a = 0.5 * (np.sqrt(x**2 + y**2))
         if a > 1000:
             a = 1000
         elif a > 510:
