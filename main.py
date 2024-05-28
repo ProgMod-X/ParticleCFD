@@ -75,8 +75,8 @@ def simulate(dt):
 
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
+            neighbours = get_neighbours_3x3((x, y), GRID_ROWS, GRID_COLS, particles)
             for particle in particles[x][y]:
-                neighbours = get_neighbours_3x3(particle, GRID_ROWS, GRID_COLS, particles)
                 f = pygame.Vector2(0)
                 f += GRAVITY
                 f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)

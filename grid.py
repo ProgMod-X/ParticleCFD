@@ -1,4 +1,4 @@
-def get_neighbours_3x3(particle, GRID_ROWS, GRID_COLS, particles):
+def get_neighbours_3x3(cell, GRID_ROWS, GRID_COLS, particles):
     OFFSETS2D = [
         (0, 0),
         (1, 0),
@@ -11,7 +11,7 @@ def get_neighbours_3x3(particle, GRID_ROWS, GRID_COLS, particles):
         (1, -1),
     ]
 
-    cell_x, cell_y = particle.cell
+    cell_x, cell_y = cell
     neighbours = []
     for offset in OFFSETS2D:
         new_x, new_y = cell_x + offset[0], cell_y + offset[1]
