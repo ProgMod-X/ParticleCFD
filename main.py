@@ -82,10 +82,18 @@ def simulate(dt):
                 f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
                 for iter_particle in neighbours:
                     f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
-                forces[particle] = f
 
+                # Check if the particle is at the bottom of the screen
+                if particle.position.y + particle.size >= HEIGHT:
+                    # Apply an upward force
+                    f -= GRAVITY * (9.81)
+
+                forces[particle] = f
+                
                 particle.velocity += forces[particle] * dt
                 particle.position += particle.velocity * dt
+
+                particle.update(WIN)
 
 
 

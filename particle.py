@@ -19,7 +19,7 @@ class Particle:
         self.dampening_effect = -dampening_effect
         self.cell = cell
 
-    def draw(self, window):
+    def update(self, window):
         win_width, win_height = window.get_size()
 
         # Check if particle touches left or right boundary
@@ -34,6 +34,7 @@ class Particle:
         self.position.x = max(self.size, min(self.position.x, win_width - self.size))
         self.position.y = max(self.size, min(self.position.y, win_height - self.size))
 
+    def draw(self, window):
         color_value = self.colorvalue(self.velocity.x, self.velocity.y)
 
         if color_value == 1000:
