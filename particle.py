@@ -39,8 +39,8 @@ class Particle:
 
         if color_value == 1000:
             color_r = 255
-            color_g = 255
-            color_b = 255
+            color_g = 0
+            color_b = 0
         elif color_value > 255:
             color_r = 255
             color_g = 510 -self.colorvalue(self.velocity.x, self.velocity.y) 
