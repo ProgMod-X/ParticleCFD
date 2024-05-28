@@ -74,7 +74,7 @@ def simulate(dt):
 
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
-            neighbours = get_neighbours_3x3(particle, GRID_ROWS, GRID_COLS, particles)
+            neighbours = get_neighbours_3x3((x,y), GRID_ROWS, GRID_COLS, particles)
             for particle in particles[x][y]:
                 f = np.array([0.0, 0.0])
                 f += GRAVITY
