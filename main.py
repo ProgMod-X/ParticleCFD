@@ -79,14 +79,14 @@ def simulate(dt):
             for particle in particles[x][y]:
                 f = pygame.Vector2(0)
                 f += GRAVITY
-                f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
+
+                left_click, middle_click, right_click = pygame.mouse.get_pressed()
+
+                if (left_click or right_click):
+                    f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
                 for iter_particle in neighbours:
                     f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
 
-                # Check if the particle is at the bottom of the screen
-                if particle.position.y + particle.size >= HEIGHT:
-                    # Apply an upward force
-                    f -= GRAVITY * (9.81)
 
                 forces[particle] = f
                 

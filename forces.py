@@ -34,9 +34,6 @@ def mouse_force(particle: Particle, near_distance_required, particle_pixel_radiu
     mouse_pos = mouse.get_pos()  
     left_click, middle_click, right_click = mouse.get_pressed()
 
-    if not (left_click or right_click):
-        return Vector2(0)
-
     if left_click:  # Left click: Repulsion
         diff = Vector2(mouse_pos) - particle.position
         distance = diff.length()
