@@ -2,6 +2,7 @@ from particle import Particle
 from pygame import mouse
 import numpy as np
 import line_profiler
+from numba import jit
 
 #@line_profiler.profile                
 def calculate_forces(iter_particle: Particle, particle: Particle, near_distance_required, repulsion_coeff, repulsion_dropoff, particle_pixel_radius, viscosity_const):
@@ -9,17 +10,22 @@ def calculate_forces(iter_particle: Particle, particle: Particle, near_distance_
     
     diff = iter_particle.position - particle.position
     distance = np.linalg.norm(diff)
-    direction = diff / distance
-
+    
     if distance == 0 or distance > near_distance_required:
         return f
+    
+    direction = diff / distance
 
     f += repulsion(distance, direction, repulsion_coeff, repulsion_dropoff)
-    f += viscosity(iter_particle, particle, distance, direction, particle_pixel_radius, viscosity_const)
+    
+    vel_diff = iter_particle.velocity - particle.velocity
+    
+    f += viscosity(vel_diff, distance, direction, particle_pixel_radius, viscosity_const)
 
     return f
 
-#@line_profiler.profile                
+#@line_profiler.profile   
+@jit(nopython=True)             
 def repulsion(distance, direction, repulsion_coeff, repulsion_dropoff):
     force_magnitude = repulsion_coeff / (distance * repulsion_dropoff) ** 2
     return -direction * force_magnitude
@@ -48,6 +54,7 @@ def mouse_force(particle: Particle, near_distance_required, particle_pixel_radiu
     else:  # No click: No force
         return np.array([0.0, 0.0])
 
-#@line_profiler.profile                
-def viscosity(iter_particle: Particle, particle: Particle, distance, direction, particle_pixel_radius, viscosity_const):
-    return (iter_particle.velocity - particle.velocity) * (particle_pixel_radius * viscosity_const / distance) ** 2
+#@line_profiler.profile   
+@jit(nopython=True)             
+def viscosity(vel_diff, distance, direction, particle_pixel_radius, viscosity_const):
+    return vel_diff * (particle_pixel_radius * viscosity_const / distance) ** 2

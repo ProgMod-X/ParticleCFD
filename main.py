@@ -72,7 +72,7 @@ def worker(particle, neighbours, dt=0.0003):
     particle.velocity += forces[particle] * dt
     particle.position += particle.velocity * dt
 
-#@line_profiler.profile                
+@line_profiler.profile                
 def simulate(dt):
     WIN.fill((0, 0, 0))
 
