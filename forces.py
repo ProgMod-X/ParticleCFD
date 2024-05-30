@@ -1,6 +1,10 @@
 from particle import Particle
 from pygame import mouse
-import numpy as np
+
+import os
+os.environ["JAX_PLATFORM_NAME"] = "cpu"
+import jax.numpy as np
+
 import line_profiler
 from numba import jit
 
@@ -16,16 +20,15 @@ def calculate_forces(iter_particle: Particle, particle: Particle, near_distance_
     
     direction = diff / distance
 
-    f += repulsion(distance, direction, repulsion_coeff, repulsion_dropoff)
+    f = f.at[:].add(repulsion(distance, direction, repulsion_coeff, repulsion_dropoff))
     
     vel_diff = iter_particle.velocity - particle.velocity
     
-    f += viscosity(vel_diff, distance, direction, particle_pixel_radius, viscosity_const)
+    f = f.at[:].add(viscosity(vel_diff, distance, direction, particle_pixel_radius, viscosity_const))
 
     return f
 
-#@line_profiler.profile   
-@jit(nopython=True)             
+#@line_profiler.profile            
 def repulsion(distance, direction, repulsion_coeff, repulsion_dropoff):
     force_magnitude = repulsion_coeff / (distance * repulsion_dropoff) ** 2
     return -direction * force_magnitude
@@ -54,7 +57,6 @@ def mouse_force(particle: Particle, near_distance_required, particle_pixel_radiu
     else:  # No click: No force
         return np.array([0.0, 0.0])
 
-#@line_profiler.profile   
-@jit(nopython=True)             
+#@line_profiler.profile            
 def viscosity(vel_diff, distance, direction, particle_pixel_radius, viscosity_const):
     return vel_diff * (particle_pixel_radius * viscosity_const / distance) ** 2

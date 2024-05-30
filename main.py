@@ -1,9 +1,12 @@
 import pygame
-import numpy as np
 import particle
 import time
 import random
 import threading
+
+import os
+os.environ["JAX_PLATFORM_NAME"] = "cpu"
+import jax.numpy as np
 
 from forces import calculate_forces, mouse_force
 from grid import get_neighbours_3x3, update_cell, create_particle_grid
@@ -61,18 +64,7 @@ def deltaTime() -> float:
 
     return delta_time
 
-def worker(particle, neighbours, dt=0.0003):
-    f = np.array([0.0, 0.0])
-    f += GRAVITY
-    f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
-    for iter_particle in neighbours:
-        f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
-    forces[particle] = f
-
-    particle.velocity += forces[particle] * dt
-    particle.position += particle.velocity * dt
-
-@line_profiler.profile                
+#@line_profiler.profile                
 def simulate(dt):
     WIN.fill((0, 0, 0))
 
@@ -83,18 +75,19 @@ def simulate(dt):
                 update_cell(particle, GRID_ROWS, GRID_COLS, GRID_CELL_SIZE)
                 particles[particle.cell[0]][particle.cell[1]].append(particle)
 
-    threads = []
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
             neighbours = get_neighbours_3x3((x,y), GRID_ROWS, GRID_COLS, particles)
             for particle in particles[x][y]:
-                t = threading.Thread(target=worker, args=(particle, neighbours))
-                threads.append(t)
-                t.start()
+                f = np.array([0.0, 0.0])
+                f += GRAVITY
+                f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
+                for iter_particle in neighbours:
+                    f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
+                forces[particle] = f
 
-    # Wait for all threads to finish
-    for t in threads:
-        t.join()
+                particle.velocity = particle.velocity.at[:].add(forces[particle] * dt)
+                particle.position = particle.position.at[:].add(particle.velocity * dt) 
 
 
 
@@ -139,8 +132,8 @@ def setup():
     for i in range(grid_rows):
         for j in range(grid_cols):
             pos = np.array([0.0, 0.0])
-            pos[0] = (start_x + i * (PARTICLE_PIXEL_RADIUS + gap_x) + random.uniform(-10, 10))  # Add random offset
-            pos[1] = (start_y + j * (PARTICLE_PIXEL_RADIUS + gap_y) + random.uniform(-10, 10))  # Add random offset
+            pos = pos.at[0].set(start_x + i * (PARTICLE_PIXEL_RADIUS + gap_x) + random.uniform(-10, 10))
+            pos = pos.at[1].set(start_y + j * (PARTICLE_PIXEL_RADIUS + gap_y) + random.uniform(-10, 10))
             
             cell_x = int(pos[0] // GRID_CELL_SIZE)
             cell_y = int(pos[1] // GRID_CELL_SIZE)
