@@ -30,30 +30,16 @@ def repulsion(distance, direction, repulsion_coeff, repulsion_dropoff) -> Vector
 
     return repulsion_force
 
-def mouse_force(particle: Particle, near_distance_required, particle_pixel_radius, mouse_repulsion_coeff, mouse_repulsion_dropoff) -> Vector2:
-    mouse_pos = mouse.get_pos()  
-    left_click, middle_click, right_click = mouse.get_pressed()
-
+def mouse_force(particle: Particle, diff, distance, near_distance_required, particle_pixel_radius, mouse_repulsion_coeff, mouse_repulsion_dropoff, left_click, right_click) -> Vector2:
+    direction = diff.normalize()
+    
     if left_click:  # Left click: Repulsion
-        diff = Vector2(mouse_pos) - particle.position
-        distance = diff.length()
-        direction = diff.normalize()
-        
-        if distance == 0 or distance > near_distance_required*3:
-            return Vector2(0)
-        
         force_magnitude = mouse_repulsion_coeff / ((distance) * mouse_repulsion_dropoff) ** 2
         repulsion_force = -direction * force_magnitude  
         return repulsion_force
 
     elif right_click:  # Right click: Attraction
-        diff = Vector2(mouse_pos) - particle.position
-        distance = diff.length()
-        direction = diff.normalize()
 
-        if distance == 0 or distance > near_distance_required*3:
-            return Vector2(0)
- 
         force_magnitude = (math.e * distance) / (math.exp(distance/particle_pixel_radius)) * 1E5
         attraction_force = direction * force_magnitude
         return attraction_force

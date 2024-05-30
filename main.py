@@ -80,10 +80,13 @@ def simulate(dt):
                 f = pygame.Vector2(0)
                 f += GRAVITY
 
+                mouse_pos = pygame.mouse.get_pos()
                 left_click, middle_click, right_click = pygame.mouse.get_pressed()
+                diff = pygame.Vector2(mouse_pos) - particle.position
+                length = diff.length()
 
-                if (left_click or right_click):
-                    f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
+                if (left_click or right_click) and (length < NEAR_DISTANCE_REQUIRED*3):
+                    f += mouse_force(particle, diff, length, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF, left_click, right_click)
                 for iter_particle in neighbours:
                     f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
 
