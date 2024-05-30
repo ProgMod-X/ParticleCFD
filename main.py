@@ -21,10 +21,10 @@ NUM_OF_PARTICLES = 300
 NEAR_DISTANCE_REQUIRED = 25  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
 
-DAMPENING_EFFECT = 0.9
+DAMPENING_EFFECT = 0.8
 
 REPULSION_COEFF = 3E3 # Higher value means stronger repulsion
-REPULSION_DROPOFF = 6E-2 # Higher value means faster dropoff and less repulsion
+REPULSION_DROPOFF = 5E-2 # Higher value means faster dropoff and less repulsion
 MOUSE_REPULSION_COEFF = 1E3
 MOUSE_REPULSION_DROPOFF = 1E-2
 MOUSE_ATTRACTION_COEFF = 5E4
