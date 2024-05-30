@@ -87,7 +87,7 @@ def simulate(dt):
                 forces[particle] = f
 
                 particle.velocity = particle.velocity.at[:].add(forces[particle] * dt)
-                particle.position = particle.position.at[:].add(particle.velocity * dt) 
+                particle.position = particle.position.at[:].add(particle.velocity * dt)
 
 
 
