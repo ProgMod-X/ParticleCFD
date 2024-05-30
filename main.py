@@ -3,6 +3,7 @@ import numpy as np
 import particle
 import time
 import random
+import threading
 
 from forces import calculate_forces, mouse_force
 from grid import get_neighbours_3x3, update_cell, create_particle_grid
@@ -60,8 +61,18 @@ def deltaTime() -> float:
 
     return delta_time
 
+def worker(particle, neighbours, dt=0.0003):
+    f = np.array([0.0, 0.0])
+    f += GRAVITY
+    f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
+    for iter_particle in neighbours:
+        f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
+    forces[particle] = f
 
-@line_profiler.profile                
+    particle.velocity += forces[particle] * dt
+    particle.position += particle.velocity * dt
+
+#@line_profiler.profile                
 def simulate(dt):
     WIN.fill((0, 0, 0))
 
@@ -72,19 +83,18 @@ def simulate(dt):
                 update_cell(particle, GRID_ROWS, GRID_COLS, GRID_CELL_SIZE)
                 particles[particle.cell[0]][particle.cell[1]].append(particle)
 
+    threads = []
     for x in range(GRID_ROWS):
         for y in range(GRID_COLS):
             neighbours = get_neighbours_3x3((x,y), GRID_ROWS, GRID_COLS, particles)
             for particle in particles[x][y]:
-                f = np.array([0.0, 0.0])
-                f += GRAVITY
-                f += mouse_force(particle, NEAR_DISTANCE_REQUIRED, PARTICLE_PIXEL_RADIUS, MOUSE_REPULSION_COEFF, MOUSE_REPULSION_DROPOFF)
-                for iter_particle in neighbours:
-                    f += calculate_forces(iter_particle, particle, NEAR_DISTANCE_REQUIRED, REPULSION_COEFF, REPULSION_DROPOFF, PARTICLE_PIXEL_RADIUS, VISCOSITY_CONST)
-                forces[particle] = f
+                t = threading.Thread(target=worker, args=(particle, neighbours))
+                threads.append(t)
+                t.start()
 
-                particle.velocity += forces[particle] * dt
-                particle.position += particle.velocity * dt
+    # Wait for all threads to finish
+    for t in threads:
+        t.join()
 
 
 
