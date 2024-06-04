@@ -2,13 +2,13 @@ using UnityEngine;
 
 public class Particle
 {
-    public Vector3 Position;
-    public Vector3 Velocity;
+    public Vector2 Position;
+    public Vector2 Velocity;
     public Color Color;
     public Mesh Mesh;
     public Material Material;
 
-    public Particle(Vector3 position, Vector3 velocity, Color color, Mesh mesh, Material material)
+    public Particle(Vector2 position, Vector2 velocity, Color color, Mesh mesh, Material material)
     {
         Position = position;
         Velocity = velocity;
@@ -17,8 +17,9 @@ public class Particle
         Material = material;
     }
 
-    public void Update(float deltaTime)
-    {
-        Position += Velocity * deltaTime;
-    }
+    // public void Update(float deltaTime)
+    // {
+    //     Position += Velocity * deltaTime;
+    //     Debug.Log(boundsSize);
+    // }
 }
