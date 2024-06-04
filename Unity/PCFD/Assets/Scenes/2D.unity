@@ -247,11 +247,11 @@ MonoBehaviour:
   ParticleMaterial: {fileID: 15303, guid: 0000000000000000f000000000000000, type: 0}
   boundsSize: {x: 90, y: 39}
   numOfParticles: 500
-  interactionRadius: 0
+  interactionRadius: 5
   nearDistanceRequired: 15
   repulsionEffect: 10000
   repulsionDropoff: 3
-  viscosityFactor: 6
+  viscosityFactor: 4
   dampeningFactor: 0.8
 --- !u!4 &1876374817
 Transform:
