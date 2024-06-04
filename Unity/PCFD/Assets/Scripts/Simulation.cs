@@ -10,15 +10,15 @@ public class Simulation : MonoBehaviour
     private List<Particle> particles = new List<Particle>();
     private List<Vector2> forces = new List<Vector2>();
     public Vector2 boundsSize;
-    public int numOfParticles;
+    public int numOfParticles = 500;
 
     public float interactionRadius;
 
     private Vector2 gravity = new Vector2(0, -981f);
-    public float nearDistanceRequired = 10f;
-    public float repulsionEffect = 1f;
-    public float repulsionDropoff = 5f;
-    public float viscosityFactor = 6f;
+    public float nearDistanceRequired = 15f;
+    public float repulsionEffect = 10000f;
+    public float repulsionDropoff = 3f;
+    public float viscosityFactor = 4f;
     public float dampeningFactor = 0.8f;
 
 
@@ -57,7 +57,7 @@ public class Simulation : MonoBehaviour
     {
         for (int i = 0; i < numOfParticles; i++) {
             forces[i] = Vector2.zero;
-            // forces[i] += gravity;
+            forces[i] += gravity;
             for (int j = 0; j < numOfParticles; j++) {
                 if (i == j) continue;
 
@@ -79,7 +79,7 @@ public class Simulation : MonoBehaviour
     void Update()
 {
     // float deltaTime = Time.deltaTime;
-    float deltaTime = 0.0003f;
+    float deltaTime = 0.001f;
 
     CalculateForces();
 
