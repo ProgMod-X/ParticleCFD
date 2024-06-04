@@ -17,7 +17,7 @@ pygame.init()
 WIDTH, HEIGHT = 400, 400
 FPS = 1000
 
-NUM_OF_PARTICLES = 300
+NUM_OF_PARTICLES = 500
 NEAR_DISTANCE_REQUIRED = 25  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
 
@@ -157,7 +157,7 @@ def setup():
                 GREEN,
                 3 + random.random() * 2,
                 DAMPENING_EFFECT,
-                (cell_x, cell_y),
+                particle,
             )
             particles[cell_x][cell_y].append(p)
 
@@ -183,9 +183,9 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particles = create_particle_grid(GRID_ROWS, GRID_COLS)
                 setup()
-        dt = 0.0003
+        dt = 0.0007
         simulate(dt)
-        if simcount % 10 == 0:
+        if simcount % 5 == 0:
             render()
         simcount += 1
 

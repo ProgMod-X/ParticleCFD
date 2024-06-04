@@ -30,9 +30,7 @@ def repulsion(distance, direction, repulsion_coeff, repulsion_dropoff) -> Vector
     return repulsion_force
 
 def viscosity(iter_particle: Particle, particle: Particle, distance, particle_pixel_radius, viscosity_const) -> Vector2:
-    viscosity_force = (iter_particle.velocity - particle.velocity) * (
-        1 / ((distance / particle_pixel_radius)* 1/viscosity_const)**2
-    )
+    viscosity_force = (iter_particle.velocity - particle.velocity) * (1 / ((distance / particle_pixel_radius)* 1/viscosity_const)**2)
     return viscosity_force
 
 def mouse_force(particle: Particle, diff, distance, near_distance_required, particle_pixel_radius, mouse_repulsion_coeff, mouse_repulsion_dropoff, left_click, right_click) -> Vector2:
