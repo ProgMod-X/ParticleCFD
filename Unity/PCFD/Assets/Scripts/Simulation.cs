@@ -20,8 +20,11 @@ public class Simulation : MonoBehaviour
     public float nearDistanceRequired = 15f;
     public float repulsionEffect = 10000f;
     public float repulsionDropoff = 3f;
-    public float viscosityFactor = 4f;
+    public float viscosityFactor = 0.4f;
     public float dampeningFactor = 0.8f;
+    public float mouseRepulsionEffect = 1f;
+    public float mouseAttractionEffect = 1f;
+    public float mouseRepulsionDropoff = 1000f;
     private List<KeyValuePair<uint, int>> spatialLookup = new List<KeyValuePair<uint, int>>();
     private List<uint> startIndices = new List<uint>();
 
@@ -144,6 +147,22 @@ public class Simulation : MonoBehaviour
         return (iterParticle.Velocity - particle.Velocity) / math.pow(distance / viscosityFactor, 2);
     }
 
+    Vector2 MouseForce(Vector2 mousePos, Vector2 particlePos, float distance, int effect)
+    {
+        if (effect == 0)
+        {
+            float forceMagnitude = (float)(math.E * distance) / (float) math.exp(distance);
+            Vector2 attraction_force = -(mousePos - particlePos).normalized * forceMagnitude;
+            return attraction_force;
+        }
+
+        else
+        {
+            float forceMagnitude = mouseRepulsionEffect / math.pow(distance * mouseRepulsionDropoff, 2);
+            return (particlePos - mousePos).normalized * forceMagnitude;
+        }
+    }
+
     void CalculateForces()
     {
         for (int i = 0; i < numOfParticles; i++)
@@ -165,7 +184,15 @@ public class Simulation : MonoBehaviour
                 forces[i] += RepulsionForce(diff, distance);
                 forces[i] += ViscosityForce(particles[i], particles[j], distance, viscosityFactor);
             }
-
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            float mouseDistance = (mousePos - particles[i].Position).magnitude;
+            bool isPullInteraction = Input.GetMouseButton(0);
+            bool isPushInteraction = Input.GetMouseButton(1);
+            bool isInteracting = (isPullInteraction || isPushInteraction) && mouseDistance < interactionRadius;
+            if (isInteracting)
+            {
+                forces[i] += MouseForce(mousePos, particles[i].Position, mouseDistance, isPullInteraction ? 0 : 1);
+            }
         }
 
     }
@@ -173,7 +200,7 @@ public class Simulation : MonoBehaviour
     void Update()
     {
         // float deltaTime = Time.deltaTime;
-        float deltaTime = 0.001f;
+        float deltaTime = 0.0005f;
 
         CalculateForces();
 
@@ -223,13 +250,14 @@ public class Simulation : MonoBehaviour
         if (Application.isPlaying)
         {
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            bool isPullInteraction = Input.GetMouseButton(0);
-            bool isPushInteraction = Input.GetMouseButton(1);
+            bool isPullInteraction = Input.GetMouseButton(1);
+            bool isPushInteraction = Input.GetMouseButton(0);
             bool isInteracting = isPullInteraction || isPushInteraction;
             if (isInteracting)
             {
                 Gizmos.color = isPullInteraction ? Color.green : Color.red;
                 Gizmos.DrawWireSphere(mousePos, interactionRadius);
+
             }
         }
     }
