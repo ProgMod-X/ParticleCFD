@@ -18,10 +18,10 @@ WIDTH, HEIGHT = 400, 400
 FPS = 1000
 
 NUM_OF_PARTICLES = 500
-NEAR_DISTANCE_REQUIRED = 25  # Pixels
+NEAR_DISTANCE_REQUIRED = 15  # Pixels
 PARTICLE_PIXEL_RADIUS = 3.5
 
-DAMPENING_EFFECT = 0.8
+DAMPENING_EFFECT = 0.5
 
 REPULSION_COEFF = 3E3 # Higher value means stronger repulsion
 REPULSION_DROPOFF = 5E-2 # Higher value means faster dropoff and less repulsion
@@ -29,7 +29,7 @@ MOUSE_REPULSION_COEFF = 1E3
 MOUSE_REPULSION_DROPOFF = 1E-2
 MOUSE_ATTRACTION_COEFF = 5E4
 MOUSE_ATTRACTION_DROPOFF = 7E-2 
-VISCOSITY_CONST = 6
+VISCOSITY_CONST = 5
 
 GRAVITY = pygame.Vector2(0, 9.81 * 1E3)
 
@@ -163,6 +163,18 @@ def setup():
 
 
 
+def linear_scale(x, x_min, x_max, y_min, y_max):
+    # Calculate the slope of the linear relationship
+    slope = (y_max - y_min) / (x_max - x_min)
+
+    # Calculate the y-intercept
+    intercept = y_min - slope * x_min
+
+    # Calculate the interpolated y value
+    y = slope * x + intercept
+    
+    return y
+
 def main():
     global particles
     run = True
@@ -183,18 +195,25 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particles = create_particle_grid(GRID_ROWS, GRID_COLS)
                 setup()
-        #particle_max_velocity = 0
-        # for x in range(GRID_ROWS):
-        #     for y in range(GRID_COLS):
-        #         for particle in particles[x][y]:
-        #             if particle.velocity.length() > particle_max_velocity:
-        #                 particle_max_velocity = particle.velocity.length()
                 
-        #dt = map(particle_max_velocity, 0, 5000, 0.001, 0.0003)
-        dt = 0.0003
+        particle_max_velocity = 0
+        for x in range(GRID_ROWS):
+            for y in range(GRID_COLS):
+                for particle in particles[x][y]:
+                    if particle.velocity.length() > particle_max_velocity:
+                        particle_max_velocity = particle.velocity.length()
+                        
+        dt = linear_scale(particle_max_velocity, 0, 3000, 0.0004, 0.00015)
+        if dt < 0.00015:
+            dt = 0.00015
+        elif dt > 0.0004:
+            dt = 0.0004
+        
         simulate(dt)
-        if simcount % 5 == 0:
+        if simcount % 10 == 0:
             render()
+            print(dt)
+            #print(particle_max_velocity)
         simcount += 1
 
 
