@@ -246,13 +246,17 @@ MonoBehaviour:
   ParticleMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   ParticleMaterial: {fileID: 15303, guid: 0000000000000000f000000000000000, type: 0}
   boundsSize: {x: 90, y: 39}
-  numOfParticles: 500
+  numOfParticles: 1000
   interactionRadius: 5
   nearDistanceRequired: 15
   repulsionEffect: 10000
   repulsionDropoff: 3
   viscosityFactor: 4
   dampeningFactor: 0.8
+  mouseRepulsionEffect: 1
+  mouseAttractionEffect: 1
+  mouseRepulsionDropoff: 1000
+  radius: 10
 --- !u!4 &1876374817
 Transform:
   m_ObjectHideFlags: 0

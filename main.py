@@ -183,7 +183,15 @@ def main():
             elif event.type == pygame.VIDEORESIZE:
                 particles = create_particle_grid(GRID_ROWS, GRID_COLS)
                 setup()
-        dt = 0.0007
+        #particle_max_velocity = 0
+        # for x in range(GRID_ROWS):
+        #     for y in range(GRID_COLS):
+        #         for particle in particles[x][y]:
+        #             if particle.velocity.length() > particle_max_velocity:
+        #                 particle_max_velocity = particle.velocity.length()
+                
+        #dt = map(particle_max_velocity, 0, 5000, 0.001, 0.0003)
+        dt = 0.0003
         simulate(dt)
         if simcount % 5 == 0:
             render()

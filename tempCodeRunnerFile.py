@@ -1,1 +1,1 @@
-particle
+repulsion
